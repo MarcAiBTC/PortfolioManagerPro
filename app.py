@@ -177,7 +177,9 @@ def safe_load_portfolio(username: str, filename: Optional[str] = None) -> bool:
             
             if missing_cols:
                 show_error_with_details(f"Error loading file details: {e}")
-
+            else:
+                pass  
+                
 def display_portfolio_file_preview(file_path: str, selected_file: str):
     """Display preview of portfolio file contents."""
     with st.expander("👀 Portfolio Preview", expanded=True):
