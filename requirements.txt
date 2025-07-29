@@ -1,7 +1,25 @@
-
+# Core dependencies
 streamlit>=1.30.0
-pandas>=1.5.0
+pandas>=2.0.0
 numpy>=1.24.0
+
+# Financial data
 yfinance>=0.2.0
+
+# Visualization
 plotly>=5.10.0
+
+# Date/time utilities
 python-dateutil>=2.8.2
+
+# Security (already included in Python standard library, but specifying for clarity)
+# hashlib, secrets, base64 are part of standard library
+
+# Optional: Enhanced logging and monitoring
+# loguru>=0.7.0  # Uncomment if you want better logging
+
+# Development dependencies (uncomment for development)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
+# black>=23.0.0
+# flake8>=6.0.0
