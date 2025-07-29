@@ -941,32 +941,32 @@ def handle_application_error(e: Exception):
 # ============================================================================
 # Application Entry Point
 # ============================================================================
-
 if __name__ == "__main__":
-    main()_with_details(
-                    f"Portfolio missing required columns: {', '.join(missing_cols)}",
-                    f"Required columns: {required_cols}"
-                )
-                return False
-            
-            st.session_state.portfolio_df = df
-            st.session_state.selected_portfolio_file = filename
-            st.session_state.portfolio_modified = False
-            st.session_state.last_refresh = datetime.now()
-            
-            st.success(f"✅ Portfolio loaded successfully! ({len(df)} assets)")
-            logger.info(f"Portfolio loaded for user {username}: {len(df)} assets")
-            return True
-        else:
-            st.warning("⚠️ Portfolio file is empty or could not be loaded")
-            return False
-            
-    except Exception as e:
-        error_msg = f"Error loading portfolio: {str(e)}"
-        show_error_with_details(error_msg, traceback.format_exc())
-        logger.error(f"Portfolio load failed for {username}: {e}")
-        return False
+    show_error_with_details(
+        f"Portfolio missing required columns: {', '.join(missing_cols)}",
+        f"Required columns: {required_cols}"
+    )
+    return False
 
+    st.session_state.portfolio_df = df
+    st.session_state.selected_portfolio_file = filename
+    st.session_state.portfolio_modified = False
+    st.session_state.last_refresh = datetime.now()
+
+    st.success(f"✅ Portfolio loaded successfully! ({len(df)} assets)")
+    logger.info(f"Portfolio loaded for user {username}: {len(df)} assets")
+    return True
+else:
+    st.warning("⚠️ Portfolio file is empty or could not be loaded")
+    return False
+
+except Exception as e:
+    error_msg = f"Error loading portfolio: {str(e)}"
+    show_error_with_details(error_msg, traceback.format_exc())
+    logger.error(f"Portfolio load failed for {username}: {e}")
+    return False
+if __name__ == "__main__":
+    main()
 # ============================================================================
 # Welcome and Onboarding - FIXED VERSION
 # ============================================================================
