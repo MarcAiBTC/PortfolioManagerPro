@@ -21,6 +21,7 @@ import time
 import traceback
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List, Tuple
+from portfolio_utils import PORTFOLIO_DIR
 
 import pandas as pd
 import numpy as np
