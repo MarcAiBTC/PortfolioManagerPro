@@ -171,6 +171,10 @@ initialize_session_state()
 # UI Helper Functions
 # ============================================================================
 
+import streamlit as st
+from datetime import datetime
+from typing import Optional
+
 def show_tooltip(text: str, tooltip: str):
     """Display text with a tooltip."""
     return f"{text} ℹ️" if st.session_state.education_mode else text
@@ -182,30 +186,34 @@ def show_welcome_message():
         <div class="welcome-banner">
             <h2>🎉 Welcome to Portfolio Manager Pro, {st.session_state.username}!</h2>
             <p><strong>Your comprehensive investment dashboard is ready!</strong></p>
-
-           col1, col2 = st.columns(2)
-
-with col1:
-    st.subheader("📊 What you can do:")
-    st.markdown("""
-    - 📈 **Track performance** with real-time data
-    - 📋 **Add assets** manually or upload CSV/JSON
-    - 🎯 **Analyze risk** with Alpha, Beta, RSI metrics
-    - 📊 **Visualize allocation** with interactive charts
-    """)
-
-with col2:
-    st.subheader("🚀 Quick Start:")
-    st.markdown("""
-    1. Add some assets or upload a portfolio
-    2. Explore the interactive dashboards
-    3. Use tooltips (ℹ️) to learn about metrics
-    4. Check diversification recommendations
-    """)
-
-# Pro tip box
-st.info("💡 **Pro Tip:** Enable Education Mode in the sidebar to see helpful explanations throughout the app!")
+        </div>
+        """, unsafe_allow_html=True)
         
+        # Sección de información en columnas
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("📊 What you can do:")
+            st.markdown("""
+            - 📈 **Track performance** with real-time data
+            - 📋 **Add assets** manually or upload CSV/JSON
+            - 🎯 **Analyze risk** with Alpha, Beta, RSI metrics
+            - 📊 **Visualize allocation** with interactive charts
+            """)
+            
+        with col2:
+            st.subheader("🚀 Quick Start:")
+            st.markdown("""
+            1. Add some assets or upload a portfolio
+            2. Explore the interactive dashboards
+            3. Use tooltips (ℹ️) to learn about metrics
+            4. Check diversification recommendations
+            """)
+        
+        # Pro tip box
+        st.info("💡 **Pro Tip:** Enable Education Mode in the sidebar to see helpful explanations throughout the app!")
+        
+        # Botones de acción
         col1, col2, col3 = st.columns([1, 1, 2])
         with col1:
             if st.button("🎯 Got it, let's start!", type="primary"):
@@ -236,6 +244,8 @@ def load_and_set_portfolio(username: str, filename: Optional[str] = None) -> boo
     """Enhanced portfolio loading with better error handling."""
     try:
         with st.spinner("📂 Loading portfolio..."):
+            # Asume que tienes una función putils.load_portfolio
+            # Si no la tienes, reemplaza esta línea con tu lógica de carga
             df = putils.load_portfolio(username, filename)
             
         if df is not None and not df.empty:
@@ -263,6 +273,74 @@ def load_and_set_portfolio(username: str, filename: Optional[str] = None) -> boo
                 """)
         return False
 
+# Ejemplo de CSS que necesitas agregar en tu aplicación principal
+def add_custom_css():
+    """Add custom CSS for styling."""
+    st.markdown("""
+    <style>
+    .welcome-banner {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .welcome-banner h2 {
+        margin: 0 0 1rem 0;
+        font-size: 2rem;
+    }
+    
+    .welcome-banner p {
+        margin: 0;
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    .metric-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-left: 4px solid #667eea;
+        margin: 1rem 0;
+    }
+    
+    .performance-positive {
+        color: #28a745;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    
+    .performance-negative {
+        color: #dc3545;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Función principal para inicializar el estado de la sesión
+def initialize_session_state():
+    """Initialize session state variables."""
+    if 'show_welcome' not in st.session_state:
+        st.session_state.show_welcome = True
+    if 'authenticated' not in st.session_state:
+        st.session_state.authenticated = False
+    if 'username' not in st.session_state:
+        st.session_state.username = "User"
+    if 'education_mode' not in st.session_state:
+        st.session_state.education_mode = False
+    if 'portfolio_df' not in st.session_state:
+        st.session_state.portfolio_df = None
+    if 'selected_portfolio_file' not in st.session_state:
+        st.session_state.selected_portfolio_file = None
+    if 'portfolio_modified' not in st.session_state:
+        st.session_state.portfolio_modified = False
+    if 'last_refresh' not in st.session_state:
+        st.session_state.last_refresh = None
 # ============================================================================
 # Main Dashboard Functions
 # ============================================================================
