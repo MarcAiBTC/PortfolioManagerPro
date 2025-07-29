@@ -1,16 +1,15 @@
 """
-Enhanced Financial Portfolio Manager - Main Application
-=====================================================
+Enhanced Financial Portfolio Manager - Main Application (FIXED)
+===============================================================
 
 A comprehensive Streamlit application for managing investment portfolios with 
 advanced visualizations, real-time metrics, and intelligent analysis.
 
-Key improvements:
-- Fixed HTML rendering issues with proper unsafe_allow_html flags
-- Better error handling and logging
-- Modular code structure with clear separation of concerns
-- Enhanced caching and performance optimization
-- Improved UI/UX with modern design patterns
+Key fixes:
+- Fixed HTML rendering issues - replaced with native Streamlit components
+- Improved error handling and logging
+- Better session state management
+- Enhanced UI/UX with proper Streamlit patterns
 
 Author: Enhanced by AI Assistant
 """
@@ -53,10 +52,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Enhanced CSS styling with improved responsiveness
+# Enhanced CSS styling with improved responsiveness - FIXED VERSION
 def load_custom_css():
     """Load custom CSS styles for the application."""
-    st.markdown("""
+    css_content = """
     <style>
         /* Import Google Fonts */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -73,176 +72,40 @@ def load_custom_css():
             font-family: 'Inter', sans-serif;
         }
         
-        .main-header h1 {
-            margin: 0;
-            font-size: 2.5rem;
-            font-weight: 700;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        
-        .main-header p {
-            margin: 0.5rem 0 0 0;
-            font-size: 1.1rem;
-            opacity: 0.9;
-        }
-        
-        .metric-card {
-            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        .stMetric {
+            background: white;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border: 1px solid #e2e8f0;
-            color: #1a202c;
-            padding: 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-            margin: 0.5rem 0;
-            transition: all 0.2s ease;
-            font-family: 'Inter', sans-serif;
         }
         
-        .metric-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-        }
-        
-        .metric-card h3 {
-            margin: 0 0 0.5rem 0;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .metric-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin: 0.5rem 0;
-            color: #1e293b;
-        }
-        
-        .metric-delta {
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        
-        .metric-help {
-            font-size: 0.8rem;
-            color: #64748b;
-            margin-top: 0.5rem;
-        }
-        
-        .welcome-banner {
+        .welcome-box {
             background: linear-gradient(135deg, #f0f9ff 0%, #dbeafe 100%);
             border: 2px solid #3b82f6;
             padding: 2rem;
             border-radius: 15px;
             margin-bottom: 2rem;
-            box-shadow: 0 4px 16px rgba(59,130,246,0.1);
-            font-family: 'Inter', sans-serif;
         }
         
-        .welcome-banner h2 {
-            color: #1e40af;
-            margin-bottom: 1rem;
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
         }
         
-        .success-badge {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            display: inline-block;
-            margin: 0.25rem;
-            font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: 0 2px 8px rgba(16,185,129,0.3);
-        }
-        
-        .warning-badge {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            display: inline-block;
-            margin: 0.25rem;
-            font-size: 0.9rem;
-            font-weight: 500;
-            box-shadow: 0 2px 8px rgba(245,158,11,0.3);
-        }
-        
-        .info-tooltip {
-            background-color: #f8fafc;
-            border-left: 4px solid #3b82f6;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .performance-positive {
-            color: #10b981;
-            font-weight: 600;
-        }
-        
-        .performance-negative {
-            color: #ef4444;
-            font-weight: 600;
-        }
-        
-        .sidebar-section {
-            background-color: #f8fafc;
-            padding: 1rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-            border-left: 4px solid #3b82f6;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .chart-container {
+        .feature-card {
             background: white;
-            padding: 1rem;
+            padding: 2rem;
             border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.05);
-            margin: 1rem 0;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
             border: 1px solid #e2e8f0;
-        }
-        
-        /* Improved button styling */
-        .stButton > button {
-            border-radius: 8px;
-            border: none;
-            font-weight: 500;
-            transition: all 0.2s ease;
-        }
-        
-        .stButton > button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        /* Enhanced selectbox styling */
-        .stSelectbox > div > div {
-            border-radius: 8px;
-        }
-        
-        /* Improved dataframe styling */
-        .dataframe {
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        /* Responsive design */
-        @media (max-width: 768px) {
-            .main-header h1 {
-                font-size: 2rem;
-            }
-            
-            .metric-card {
-                margin: 0.25rem 0;
-            }
+            text-align: center;
         }
     </style>
-    """, unsafe_allow_html=True)
+    """
+    st.markdown(css_content, unsafe_allow_html=True)
 
 # Load CSS
 load_custom_css()
@@ -277,29 +140,21 @@ def initialize_session_state():
 initialize_session_state()
 
 # ============================================================================
-# UI Helper Functions
+# UI Helper Functions - FIXED VERSIONS
 # ============================================================================
+
+def show_main_header(title: str, subtitle: str):
+    """Display main header with proper Streamlit components."""
+    st.markdown(
+        f'<div class="main-header"><h1>{title}</h1><p>{subtitle}</p></div>',
+        unsafe_allow_html=True
+    )
 
 def show_tooltip(text: str, tooltip: str) -> str:
     """Display text with a tooltip if education mode is enabled."""
     if st.session_state.education_mode:
         return f"{text} ℹ️"
     return text
-
-def create_metric_card(title: str, value: str, delta: str = None, help_text: str = None) -> str:
-    """Create a styled metric card with optional delta and help."""
-    delta_class = "performance-positive" if delta and not str(delta).startswith("-") else "performance-negative"
-    delta_html = f'<div class="metric-delta {delta_class}">{delta}</div>' if delta else ""
-    help_html = f'<div class="metric-help">{help_text}</div>' if help_text else ""
-    
-    return f"""
-    <div class="metric-card">
-        <h3>{title}</h3>
-        <div class="metric-value">{value}</div>
-        {delta_html}
-        {help_html}
-    </div>
-    """
 
 def show_error_with_details(error_msg: str, details: str = None):
     """Show error message with optional details in education mode."""
@@ -321,7 +176,761 @@ def safe_load_portfolio(username: str, filename: Optional[str] = None) -> bool:
             missing_cols = [col for col in required_cols if col not in df.columns]
             
             if missing_cols:
-                show_error_with_details(
+                show_error_with_details(f"Error loading file details: {e}")
+
+def display_portfolio_file_preview(file_path: str, selected_file: str):
+    """Display preview of portfolio file contents."""
+    with st.expander("👀 Portfolio Preview", expanded=True):
+        try:
+            # Load portfolio data
+            if selected_file.endswith('.csv'):
+                preview_df = pd.read_csv(file_path)
+            else:
+                preview_df = pd.read_json(file_path)
+            
+            if not preview_df.empty:
+                # Quick stats using native metrics
+                col1, col2, col3 = st.columns(3)
+                
+                with col1:
+                    st.metric("🎯 Assets", len(preview_df))
+                
+                with col2:
+                    if 'Purchase Price' in preview_df.columns and 'Quantity' in preview_df.columns:
+                        total_cost = (preview_df['Purchase Price'] * preview_df['Quantity']).sum()
+                        st.metric("💰 Total Cost", f"${total_cost:,.2f}")
+                
+                with col3:
+                    if 'Asset Type' in preview_df.columns:
+                        asset_types = preview_df['Asset Type'].nunique()
+                        st.metric("📊 Asset Types", asset_types)
+                
+                # Data preview
+                st.dataframe(preview_df, use_container_width=True, height=200)
+                
+                # Download options
+                display_file_download_options(preview_df, selected_file)
+            else:
+                st.warning("⚠️ Portfolio file appears to be empty")
+        
+        except Exception as e:
+            show_error_with_details(f"Error loading preview: {e}")
+
+def display_file_download_options(preview_df: pd.DataFrame, selected_file: str):
+    """Display download options for portfolio files."""
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # CSV download
+        csv_data = preview_df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            "📄 Download as CSV",
+            csv_data,
+            f"{selected_file.replace('.json', '.csv')}",
+            "text/csv"
+        )
+    
+    with col2:
+        # JSON download
+        json_data = preview_df.to_json(orient="records", indent=2).encode('utf-8')
+        st.download_button(
+            "📋 Download as JSON",
+            json_data,
+            f"{selected_file.replace('.csv', '.json')}",
+            "application/json"
+        )
+
+def display_portfolio_timeline(files: List[str]):
+    """Display portfolio timeline visualization."""
+    st.subheader("📈 Portfolio Timeline")
+    
+    timeline_data = []
+    for file in files:
+        try:
+            file_path = os.path.join(putils.PORTFOLIO_DIR, file)
+            file_stats = os.stat(file_path)
+            
+            # Try to load and calculate value
+            try:
+                df = pd.read_csv(file_path) if file.endswith('.csv') else pd.read_json(file_path)
+                if 'Purchase Price' in df.columns and 'Quantity' in df.columns:
+                    total_value = (df['Purchase Price'] * df['Quantity']).sum()
+                    asset_count = len(df)
+                else:
+                    total_value = 0
+                    asset_count = len(df) if not df.empty else 0
+            except:
+                total_value = 0
+                asset_count = 0
+            
+            timeline_data.append({
+                'File': file,
+                'Date': datetime.fromtimestamp(file_stats.st_mtime),
+                'Total Value': total_value,
+                'Asset Count': asset_count
+            })
+        except:
+            continue
+    
+    if timeline_data:
+        timeline_df = pd.DataFrame(timeline_data)
+        timeline_df = timeline_df.sort_values('Date')
+        
+        fig = px.line(
+            timeline_df,
+            x='Date',
+            y='Total Value',
+            title="📊 Portfolio Value Timeline",
+            markers=True,
+            hover_data=['Asset Count', 'File']
+        )
+        fig.update_layout(
+            yaxis_title="Total Portfolio Value ($)",
+            xaxis_title="Date"
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+# ============================================================================
+# Help and Education Page - FIXED VERSION
+# ============================================================================
+
+def help_page():
+    """Enhanced help page using native Streamlit components."""
+    show_main_header("❓ Help & Guide", "Learn how to maximize your investment management experience")
+    
+    # Help navigation
+    help_tab1, help_tab2, help_tab3, help_tab4 = st.tabs([
+        "🚀 Getting Started",
+        "📊 Understanding Metrics", 
+        "🔧 Troubleshooting",
+        "💡 Best Practices"
+    ])
+    
+    with help_tab1:
+        display_getting_started_help()
+    
+    with help_tab2:
+        display_metrics_help()
+    
+    with help_tab3:
+        display_troubleshooting_help()
+    
+    with help_tab4:
+        display_best_practices_help()
+
+def display_getting_started_help():
+    """Display getting started guidance using native Streamlit."""
+    st.subheader("🚀 Getting Started")
+    
+    st.markdown("### Creating Your First Portfolio")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("**Option 1: Add Assets Manually**")
+        st.markdown("""
+        1. Go to the **"➕ Add Asset"** tab
+        2. Enter the ticker symbol (e.g., AAPL, MSFT, BTC-USD)
+        3. Input purchase price, quantity, and asset type
+        4. Click "Add Asset" to save
+        """)
+    
+    with col2:
+        st.markdown("**Option 2: Upload a File**")
+        st.markdown("""
+        1. Go to the **"📤 Upload Portfolio"** tab
+        2. Download the CSV or JSON template
+        3. Fill in your portfolio data
+        4. Upload the file and import
+        """)
+    
+    st.markdown("### Required Information")
+    
+    requirements = [
+        "**Ticker**: The trading symbol (AAPL, MSFT, etc.)",
+        "**Purchase Price**: What you paid per share/unit",
+        "**Quantity**: How many shares/units you own",
+        "**Asset Type**: Category (Stock, ETF, Crypto, etc.)"
+    ]
+    
+    for req in requirements:
+        st.write(f"• {req}")
+    
+    with st.expander("📋 Sample Portfolio Format"):
+        sample_data = pd.DataFrame({
+            'Ticker': ['AAPL', 'MSFT', 'GOOGL'],
+            'Purchase Price': [150.00, 300.00, 2500.00],
+            'Quantity': [10, 5, 2],
+            'Asset Type': ['Stock', 'Stock', 'Stock']
+        })
+        st.dataframe(sample_data)
+
+def display_metrics_help():
+    """Display metrics explanation using native Streamlit."""
+    st.subheader("📊 Understanding Key Metrics")
+    
+    # Create expandable sections for each metric category
+    with st.expander("💰 Value Metrics", expanded=True):
+        st.markdown("""
+        - **Total Value**: Current market value of your holdings (Current Price × Quantity)
+        - **P/L (Profit/Loss)**: Difference between current value and what you paid
+        - **P/L %**: Percentage return on your investment
+        - **Weight %**: Percentage of total portfolio value
+        """)
+    
+    with st.expander("📊 Technical Indicators"):
+        st.markdown("""
+        - **RSI (Relative Strength Index)**: Momentum indicator (0-100). Below 30 = oversold, above 70 = overbought
+        - **Volatility**: Annual price volatility percentage. Higher = more risky
+        - **Beta**: Correlation with market. >1 = more volatile than market, <1 = less volatile
+        - **Alpha**: Excess return vs benchmark. Positive = outperforming market
+        """)
+    
+    with st.expander("⚖️ Risk Metrics"):
+        st.markdown("""
+        - **Sharpe Ratio**: Risk-adjusted return. Higher is better
+        - **VaR (Value at Risk)**: Potential loss at 95% confidence level
+        - **Correlation**: How assets move relative to each other
+        """)
+    
+    if st.session_state.education_mode:
+        st.info("💡 Education Mode is ON - you'll see helpful tooltips throughout the app!")
+
+def display_troubleshooting_help():
+    """Display troubleshooting information using native Streamlit."""
+    st.subheader("🔧 Common Issues & Solutions")
+    
+    with st.expander("❌ Ticker not found"):
+        st.markdown("""
+        **Solutions:**
+        - Double-check the ticker symbol spelling
+        - For crypto, use format like BTC-USD, ETH-USD
+        - International stocks may need exchange suffix
+        - Some delisted stocks won't have current prices
+        """)
+    
+    with st.expander("⚠️ File upload errors"):
+        st.markdown("""
+        **Solutions:**
+        - Ensure your file has required columns: Ticker, Purchase Price, Quantity, Asset Type
+        - Check that numeric columns contain valid numbers
+        - Remove any completely empty rows
+        - Save as UTF-8 encoding if using special characters
+        """)
+    
+    with st.expander("📊 Missing data"):
+        st.markdown("""
+        **Common causes:**
+        - Some metrics require historical data which may not be available
+        - New listings might not have enough price history
+        - Market closed - some data may be delayed
+        - Try refreshing data or checking your internet connection
+        """)
+    
+    with st.expander("🔄 Slow performance"):
+        st.markdown("""
+        **Solutions:**
+        - Clear browser cache if pages load slowly
+        - Large portfolios (>100 assets) may take longer to process
+        - Use 'Refresh Data' button to update cached prices
+        - Consider splitting very large portfolios
+        """)
+
+def display_best_practices_help():
+    """Display best practices guidance using native Streamlit."""
+    st.subheader("💡 Best Practices")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### Portfolio Management")
+        st.markdown("""
+        - **Diversify**: Don't put all money in one asset type
+        - **Regular Review**: Check your portfolio at least monthly
+        - **Keep Records**: Save notes about why you bought each asset
+        - **Risk Management**: Don't risk more than you can afford to lose
+        """)
+        
+        st.markdown("### Investment Principles")
+        st.markdown("""
+        - **Long-term Focus**: Don't panic over short-term volatility
+        - **Dollar-Cost Averaging**: Consider regular, consistent investments
+        - **Rebalancing**: Periodically adjust allocations to target percentages
+        - **Research**: Use the metrics as starting points, not final decisions
+        """)
+    
+    with col2:
+        st.markdown("### Using This App")
+        st.markdown("""
+        - **Education Mode**: Keep it on to learn about metrics
+        - **Save Regularly**: Your portfolios auto-save, but manual saves create backups
+        - **Historical Data**: Review portfolio history to track your progress
+        - **Validate Tickers**: Use the validation feature when uploading files
+        """)
+        
+        st.markdown("### Data Management")
+        st.markdown("""
+        - **Backup**: Download your data regularly
+        - **Organization**: Use clear naming for different portfolios
+        - **Updates**: Refresh data when markets are open
+        - **Clean Data**: Remove old or incorrect entries
+        """)
+    
+    st.warning("⚠️ **Disclaimer**: This app is for informational purposes only. Not financial advice. Always consult professionals for investment decisions.")
+
+# ============================================================================
+# Authentication Pages - FIXED VERSIONS
+# ============================================================================
+
+def display_auth_page():
+    """Enhanced authentication page using native Streamlit components."""
+    # Header using native Streamlit
+    st.markdown("# 📊 Portfolio Manager Pro")
+    st.markdown("### Your comprehensive investment dashboard with real-time analytics")
+    st.markdown("---")
+    
+    # Feature highlights using native columns
+    display_feature_highlights()
+    
+    st.markdown("---")
+    
+    # Authentication tabs
+    tab1, tab2 = st.tabs(["🔐 Sign In", "📝 Create Account"])
+    
+    with tab1:
+        display_login_form()
+    
+    with tab2:
+        display_registration_form()
+    
+    # Security notice
+    display_security_notice()
+
+def display_feature_highlights():
+    """Display app feature highlights using native Streamlit."""
+    st.subheader("🌟 Key Features")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    features = [
+        ("📈 Real-Time Analytics", "Live market data with advanced metrics like Alpha, Beta, RSI, and Volatility"),
+        ("📊 Interactive Dashboards", "Beautiful visualizations for portfolio allocation, performance, and risk analysis"), 
+        ("🎯 Smart Recommendations", "AI-powered insights for diversification and portfolio optimization")
+    ]
+    
+    for i, (title, description) in enumerate(features):
+        with [col1, col2, col3][i]:
+            st.markdown(f"#### {title}")
+            st.write(description)
+
+def display_security_notice():
+    """Display security information using native Streamlit."""
+    st.info("""
+    🔒 **Your data is secure**: Passwords are encrypted with PBKDF2-SHA256 • 
+    All portfolio data is stored locally • No personal information is shared
+    """)
+
+def display_login_form():
+    """Enhanced login form using native Streamlit components."""
+    st.markdown("### 🔐 Welcome Back!")
+    st.write("Access your portfolio dashboard")
+    
+    with st.form("login_form"):
+        username_input = st.text_input(
+            "👤 Username",
+            placeholder="Enter your username",
+            help="The username you registered with"
+        )
+        
+        password_input = st.text_input(
+            "🔒 Password",
+            type="password",
+            placeholder="Enter your password",
+            help="Your secure password"
+        )
+        
+        remember_me = st.checkbox("🔄 Keep me signed in", help="Stay logged in for this session")
+        
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            submitted = st.form_submit_button("🚀 Sign In", type="primary")
+        
+        if submitted:
+            handle_login_submission(username_input, password_input)
+
+def handle_login_submission(username_input: str, password_input: str):
+    """Handle login form submission."""
+    if not username_input.strip():
+        st.error("❌ Please enter your username")
+    elif not password_input:
+        st.error("❌ Please enter your password")
+    else:
+        with st.spinner("🔍 Verifying credentials..."):
+            time.sleep(0.5)  # Brief delay for UX
+            
+            if authenticate_user(username_input.strip(), password_input):
+                # Successful login
+                st.session_state.authenticated = True
+                st.session_state.username = username_input.strip()
+                st.session_state.first_login = True
+                st.session_state.show_welcome = True
+                
+                # Load user's portfolio
+                safe_load_portfolio(username_input.strip())
+                
+                st.success("✅ Welcome back! Redirecting to your dashboard...")
+                logger.info(f"User logged in: {username_input.strip()}")
+                time.sleep(1)
+                st.rerun()
+            else:
+                st.error("❌ Invalid username or password")
+                
+                if st.session_state.education_mode:
+                    with st.expander("🔧 Login Help"):
+                        st.markdown("""
+                        **Trouble signing in?**
+                        - Double-check your username and password
+                        - Make sure Caps Lock is off
+                        - Username is case-sensitive
+                        - Contact support if you forgot your credentials
+                        """)
+
+def display_registration_form():
+    """Enhanced registration form using native Streamlit components."""
+    st.markdown("### 📝 Join Portfolio Manager Pro")
+    st.write("Create your account to start tracking investments")
+    
+    with st.form("register_form"):
+        new_username = st.text_input(
+            "👤 Choose Username",
+            placeholder="Enter a unique username",
+            help="3-20 characters, letters and numbers only"
+        )
+        
+        new_password = st.text_input(
+            "🔒 Create Password",
+            type="password",
+            placeholder="Minimum 6 characters",
+            help="Use a strong password with letters, numbers, and symbols"
+        )
+        
+        confirm_password = st.text_input(
+            "🔒 Confirm Password",
+            type="password",
+            placeholder="Re-enter your password",
+            help="Must match the password above"
+        )
+        
+        # Password strength indicator
+        if new_password:
+            strength = putils.check_password_strength(new_password)
+            strength_colors = {"Weak": "🔴", "Medium": "🟡", "Strong": "🟢"}
+            st.write(f"Password Strength: {strength_colors.get(strength, '⚪')} {strength}")
+        
+        agree_terms = st.checkbox(
+            "✅ I agree to the Terms of Service and Privacy Policy",
+            help="Required to create an account"
+        )
+        
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            submitted_reg = st.form_submit_button("✨ Create Account", type="primary")
+        
+        if submitted_reg:
+            handle_registration_submission(new_username, new_password, confirm_password, agree_terms)
+
+def handle_registration_submission(new_username: str, new_password: str, confirm_password: str, agree_terms: bool):
+    """Handle registration form submission."""
+    # Validation
+    errors = []
+    username_clean = new_username.strip()
+    
+    if not username_clean:
+        errors.append("Username is required")
+    elif len(username_clean) < 3:
+        errors.append("Username must be at least 3 characters")
+    elif len(username_clean) > 20:
+        errors.append("Username must be less than 20 characters")
+    elif not username_clean.replace('_', '').isalnum():
+        errors.append("Username can only contain letters, numbers, and underscores")
+    
+    if not new_password:
+        errors.append("Password is required")
+    elif len(new_password) < 6:
+        errors.append("Password must be at least 6 characters")
+    elif new_password != confirm_password:
+        errors.append("Passwords do not match")
+    
+    if not agree_terms:
+        errors.append("You must agree to the Terms of Service")
+    
+    if errors:
+        for error in errors:
+            st.error(f"❌ {error}")
+    else:
+        with st.spinner("👤 Creating your account..."):
+            time.sleep(0.5)  # Brief delay for UX
+            
+            if register_user(username_clean, new_password):
+                st.success("🎉 Account created successfully!")
+                st.info("👆 You can now sign in using the Sign In tab")
+                st.balloons()
+                logger.info(f"New user registered: {username_clean}")
+            else:
+                st.error("❌ Username already exists. Please choose another.")
+
+# ============================================================================
+# Sidebar and Navigation - FIXED VERSION
+# ============================================================================
+
+def create_sidebar():
+    """Enhanced sidebar using native Streamlit components."""
+    with st.sidebar:
+        if st.session_state.authenticated:
+            # User profile section using native components
+            st.markdown("### 👤 Welcome Back!")
+            st.write(f"**{st.session_state.username}**")
+            st.caption(f"Last login: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+            
+            # Portfolio quick stats
+            display_sidebar_portfolio_stats()
+            
+            # Navigation
+            st.markdown("### 🧭 Navigation")
+            page = st.radio(
+                "Choose a page:",
+                [
+                    "📊 Dashboard",
+                    "➕ Add Asset",
+                    "📤 Upload Portfolio",
+                    "📚 Portfolio History",
+                    "❓ Help",
+                    "🚪 Sign Out"
+                ],
+                label_visibility="collapsed"
+            )
+            
+            st.markdown("---")
+            
+            # Settings
+            display_sidebar_settings()
+            
+            # Quick actions
+            display_sidebar_quick_actions()
+            
+            # Footer
+            display_sidebar_footer()
+            
+            return page
+        
+        else:
+            # Unauthenticated sidebar using native components
+            display_unauthenticated_sidebar()
+            return None
+
+def display_sidebar_portfolio_stats():
+    """Display portfolio quick stats in sidebar using native Streamlit."""
+    if st.session_state.portfolio_df is not None and not st.session_state.portfolio_df.empty:
+        df = st.session_state.portfolio_df
+        asset_count = len(df)
+        
+        if 'Purchase Price' in df.columns and 'Quantity' in df.columns:
+            total_cost = (df['Purchase Price'] * df['Quantity']).sum()
+        else:
+            total_cost = 0
+        
+        st.markdown("#### 📊 Portfolio Quick Stats")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.metric("🎯 Assets", asset_count)
+            st.metric("📈 Types", df['Asset Type'].nunique())
+        with col2:
+            st.metric("💰 Invested", f"${total_cost:,.0f}")
+
+def display_sidebar_settings():
+    """Display settings section in sidebar using native Streamlit."""
+    st.markdown("### ⚙️ Settings")
+    
+    st.session_state.education_mode = st.checkbox(
+        "📚 Education Mode",
+        value=st.session_state.education_mode,
+        help="Show helpful tooltips and explanations"
+    )
+    
+    timeframe = st.selectbox(
+        "📅 Data Timeframe",
+        ["1mo", "3mo", "6mo", "1y", "2y"],
+        index=2,
+        help="Historical data period for analysis"
+    )
+    st.session_state.selected_timeframe = timeframe
+
+def display_sidebar_quick_actions():
+    """Display quick actions section in sidebar using native Streamlit."""
+    st.markdown("### ⚡ Quick Actions")
+    
+    if st.button("🔄 Refresh All Data", help="Update all market data"):
+        clear_cache()
+        st.success("✅ Data refreshed!")
+        st.rerun()
+    
+    if st.session_state.portfolio_df is not None and not st.session_state.portfolio_df.empty:
+        if st.button("💾 Save Current Portfolio", help="Save current state"):
+            try:
+                putils.save_portfolio(st.session_state.username, st.session_state.portfolio_df)
+                st.success("✅ Portfolio saved!")
+            except Exception as e:
+                st.error(f"❌ Save failed: {e}")
+
+def display_sidebar_footer():
+    """Display sidebar footer using native Streamlit."""
+    st.markdown("---")
+    st.caption(f"📊 Portfolio Manager Pro v{st.session_state.app_version}")
+    st.caption("Built with ❤️ using Streamlit")
+
+def display_unauthenticated_sidebar():
+    """Display sidebar for unauthenticated users using native Streamlit."""
+    st.markdown("### 🔐 Please Sign In")
+    st.write("Access your portfolio dashboard by signing in or creating an account.")
+    
+    st.markdown("### 🌟 Features")
+    features = [
+        "📈 **Real-time market data**",
+        "📊 **Interactive charts**", 
+        "🎯 **Risk analysis**",
+        "💡 **Smart recommendations**",
+        "📱 **Mobile responsive**",
+        "🔒 **Secure & private**"
+    ]
+    
+    for feature in features:
+        st.write(f"- {feature}")
+
+# ============================================================================
+# Logout Functionality - FIXED VERSION
+# ============================================================================
+
+def display_logout_confirmation():
+    """Enhanced logout confirmation using native Streamlit."""
+    show_main_header("🚪 Sign Out", "Thanks for using Portfolio Manager Pro!")
+    
+    col1, col2, col3 = st.columns([1, 2, 1])
+    
+    with col2:
+        st.markdown("### 👋 See you soon!")
+        st.write(f"**{st.session_state.username}**, your portfolio data has been saved securely.")
+        st.write("You can return anytime to continue tracking your investments.")
+        
+        st.markdown("---")
+        
+        col_a, col_b = st.columns(2)
+        
+        with col_a:
+            if st.button("⬅️ Stay Signed In", type="secondary"):
+                st.info("👍 Continuing your session...")
+                time.sleep(1)
+                st.rerun()
+        
+        with col_b:
+            if st.button("🚪 Confirm Sign Out", type="primary"):
+                handle_logout()
+
+def handle_logout():
+    """Handle user logout process."""
+    username = st.session_state.username
+    
+    # Clear session state
+    for key in list(st.session_state.keys()):
+        del st.session_state[key]
+    
+    # Reinitialize
+    initialize_session_state()
+    
+    st.success("👋 You have been signed out successfully!")
+    logger.info(f"User logged out: {username}")
+    time.sleep(1)
+    st.rerun()
+
+# ============================================================================
+# Main Application Logic - FIXED VERSION
+# ============================================================================
+
+def main():
+    """Enhanced main application with improved error handling."""
+    try:
+        # Create sidebar and get navigation choice
+        selected_page = create_sidebar()
+        
+        if not st.session_state.authenticated:
+            display_auth_page()
+            return
+        
+        # Show welcome message for new sessions
+        show_welcome_message()
+        
+        # Main content routing
+        route_to_page(selected_page)
+        
+    except Exception as e:
+        handle_application_error(e)
+
+def route_to_page(selected_page: str):
+    """Route to the selected page."""
+    if selected_page == "📊 Dashboard":
+        display_portfolio_overview()
+    elif selected_page == "➕ Add Asset":
+        add_asset_page()
+    elif selected_page == "📤 Upload Portfolio":
+        upload_portfolio_page()
+    elif selected_page == "📚 Portfolio History":
+        history_page()
+    elif selected_page == "❓ Help":
+        help_page()
+    elif selected_page == "🚪 Sign Out":
+        display_logout_confirmation()
+
+def handle_application_error(e: Exception):
+    """Handle application-level errors using native Streamlit."""
+    error_msg = f"An unexpected error occurred: {str(e)}"
+    st.error(f"❌ {error_msg}")
+    logger.error(f"Application error: {e}", exc_info=True)
+    
+    if st.session_state.education_mode:
+        with st.expander("🔧 Error Details (for debugging)"):
+            st.code(traceback.format_exc())
+    
+    st.markdown("### 🔧 Quick Actions")
+    col1, col2, col3 = st.columns([1, 1, 1])
+    
+    with col1:
+        if st.button("🔄 Refresh Page"):
+            st.rerun()
+    
+    with col2:
+        if st.button("🏠 Go to Dashboard"):
+            # Reset to dashboard
+            st.session_state.show_welcome = False
+            st.rerun()
+    
+    with col3:
+        if st.button("🆘 Reset Application"):
+            # Clear all session state and restart
+            for key in list(st.session_state.keys()):
+                if key not in ['authenticated', 'username']:  # Keep login status
+                    del st.session_state[key]
+            initialize_session_state()
+            st.session_state.authenticated = True  # Restore auth status
+            st.rerun()
+
+# ============================================================================
+# Application Entry Point
+# ============================================================================
+
+if __name__ == "__main__":
+    main()_with_details(
                     f"Portfolio missing required columns: {', '.join(missing_cols)}",
                     f"Required columns: {required_cols}"
                 )
@@ -346,46 +955,45 @@ def safe_load_portfolio(username: str, filename: Optional[str] = None) -> bool:
         return False
 
 # ============================================================================
-# Welcome and Onboarding
+# Welcome and Onboarding - FIXED VERSION
 # ============================================================================
 
 def show_welcome_message():
-    """Enhanced welcome message with better HTML rendering."""
+    """Enhanced welcome message using native Streamlit components."""
     if st.session_state.show_welcome and st.session_state.authenticated:
-        welcome_html = f"""
-        <div class="welcome-banner">
-            <h2>🎉 Welcome to Portfolio Manager Pro, {st.session_state.username}!</h2>
-            <p><strong>Your comprehensive investment dashboard is ready!</strong></p>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
-                <div>
-                    <h4>📊 What you can do:</h4>
-                    <ul style="text-align: left; margin: 0; padding-left: 1.5rem;">
-                        <li>📈 <strong>Track performance</strong> with real-time data</li>
-                        <li>📋 <strong>Add assets</strong> manually or upload CSV/JSON</li>
-                        <li>🎯 <strong>Analyze risk</strong> with Alpha, Beta, RSI metrics</li>
-                        <li>📊 <strong>Visualize allocation</strong> with interactive charts</li>
-                    </ul>
-                </div>
-                <div>
-                    <h4>🚀 Quick Start:</h4>
-                    <ol style="text-align: left; margin: 0; padding-left: 1.5rem;">
-                        <li>Add some assets or upload a portfolio</li>
-                        <li>Explore the interactive dashboards</li>
-                        <li>Use tooltips (ℹ️) to learn about metrics</li>
-                        <li>Check diversification recommendations</li>
-                    </ol>
-                </div>
-            </div>
-            
-            <div style="margin-top: 1.5rem; padding: 1rem; background-color: rgba(255,255,255,0.8); border-radius: 8px;">
-                💡 <strong>Pro Tip:</strong> Enable Education Mode in the sidebar to see helpful explanations throughout the app!
-            </div>
-        </div>
-        """
+        # Main welcome container
+        st.markdown('<div class="welcome-box">', unsafe_allow_html=True)
         
-        st.markdown(welcome_html, unsafe_allow_html=True)
+        st.markdown(f"## 🎉 Welcome to Portfolio Manager Pro, {st.session_state.username}!")
+        st.markdown("**Your comprehensive investment dashboard is ready!**")
         
+        # Two column layout for features
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("#### 📊 What you can do:")
+            st.markdown("""
+            - 📈 **Track performance** with real-time data
+            - 📋 **Add assets** manually or upload CSV/JSON
+            - 🎯 **Analyze risk** with Alpha, Beta, RSI metrics
+            - 📊 **Visualize allocation** with interactive charts
+            """)
+        
+        with col2:
+            st.markdown("#### 🚀 Quick Start:")
+            st.markdown("""
+            1. Add some assets or upload a portfolio
+            2. Explore the interactive dashboards
+            3. Use tooltips (ℹ️) to learn about metrics
+            4. Check diversification recommendations
+            """)
+        
+        # Pro tip box
+        st.info("💡 **Pro Tip:** Enable Education Mode in the sidebar to see helpful explanations throughout the app!")
+        
+        st.markdown('</div>', unsafe_allow_html=True)
+        
+        # Action buttons
         col1, col2, col3 = st.columns([1, 1, 2])
         with col1:
             if st.button("🎯 Got it, let's start!", type="primary"):
@@ -398,55 +1006,51 @@ def show_welcome_message():
                 st.rerun()
 
 # ============================================================================
-# Portfolio Overview and Dashboard
+# Portfolio Overview and Dashboard - FIXED VERSION
 # ============================================================================
 
 def display_portfolio_overview():
-    """Enhanced portfolio overview with comprehensive visualizations."""
-    st.markdown(
-        '<div class="main-header"><h1>📊 Portfolio Dashboard</h1><p>Real-time analysis of your investments</p></div>',
-        unsafe_allow_html=True
-    )
+    """Enhanced portfolio overview with native Streamlit components."""
+    show_main_header("📊 Portfolio Dashboard", "Real-time analysis of your investments")
     
     username = st.session_state.username
     
     # Portfolio Selection Section
-    with st.container():
-        st.subheader("🗂️ Portfolio Selection")
-        portfolios = putils.list_portfolios(username)
+    st.subheader("🗂️ Portfolio Selection")
+    portfolios = putils.list_portfolios(username)
+    
+    if portfolios:
+        col1, col2, col3 = st.columns([3, 1, 1])
         
-        if portfolios:
-            col1, col2, col3 = st.columns([3, 1, 1])
+        with col1:
+            default_index = 0
+            if st.session_state.selected_portfolio_file in portfolios:
+                try:
+                    default_index = portfolios.index(st.session_state.selected_portfolio_file)
+                except ValueError:
+                    pass
             
-            with col1:
-                default_index = 0
-                if st.session_state.selected_portfolio_file in portfolios:
-                    try:
-                        default_index = portfolios.index(st.session_state.selected_portfolio_file)
-                    except ValueError:
-                        pass
-                
-                selected_file = st.selectbox(
-                    "Select a portfolio to analyze:",
-                    portfolios,
-                    index=default_index,
-                    help="Choose from your saved portfolios"
-                )
-                
-                if selected_file != st.session_state.selected_portfolio_file:
-                    safe_load_portfolio(username, selected_file)
+            selected_file = st.selectbox(
+                "Select a portfolio to analyze:",
+                portfolios,
+                index=default_index,
+                help="Choose from your saved portfolios"
+            )
             
-            with col2:
-                if st.button("🔄 Refresh Data", help="Update prices and recalculate metrics"):
-                    clear_cache()
-                    if st.session_state.portfolio_df is not None:
-                        st.rerun()
-            
-            with col3:
-                if st.button("📊 Quick Stats", help="Show portfolio summary"):
-                    show_portfolio_quick_stats()
-        else:
-            display_empty_portfolio_guide()
+            if selected_file != st.session_state.selected_portfolio_file:
+                safe_load_portfolio(username, selected_file)
+        
+        with col2:
+            if st.button("🔄 Refresh Data", help="Update prices and recalculate metrics"):
+                clear_cache()
+                if st.session_state.portfolio_df is not None:
+                    st.rerun()
+        
+        with col3:
+            if st.button("📊 Quick Stats", help="Show portfolio summary"):
+                show_portfolio_quick_stats()
+    else:
+        display_empty_portfolio_guide()
 
     df = st.session_state.portfolio_df
     if df is None or df.empty:
@@ -480,19 +1084,27 @@ def clear_cache():
     putils.HIST_PRICES_CACHE.clear()
 
 def show_portfolio_quick_stats():
-    """Show quick portfolio statistics."""
+    """Show quick portfolio statistics using native Streamlit."""
     if st.session_state.portfolio_df is not None:
         df = st.session_state.portfolio_df
         last_refresh = st.session_state.last_refresh
         refresh_text = last_refresh.strftime('%H:%M') if last_refresh else 'Unknown'
         
-        st.info(f"""
-        **Portfolio Quick Stats:**
-        - 🎯 Assets: {len(df)}
-        - 📊 Asset Types: {df['Asset Type'].nunique()}
-        - 📅 Last Updated: {refresh_text}
-        - 💾 File: {st.session_state.selected_portfolio_file or 'Current'}
-        """)
+        # Create columns for metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("🎯 Assets", len(df))
+        
+        with col2:
+            st.metric("📊 Asset Types", df['Asset Type'].nunique())
+        
+        with col3:
+            st.metric("📅 Last Updated", refresh_text)
+        
+        with col4:
+            file_name = st.session_state.selected_portfolio_file or 'Current'
+            st.metric("💾 File", file_name)
 
 def fetch_and_compute_metrics(df: pd.DataFrame) -> Optional[pd.DataFrame]:
     """Fetch market data and compute enhanced metrics."""
@@ -529,32 +1141,27 @@ def fetch_and_compute_metrics(df: pd.DataFrame) -> Optional[pd.DataFrame]:
         raise
 
 def display_empty_portfolio_guide():
-    """Guide for users with empty portfolios."""
-    guide_html = """
-    <div style="text-align: center; padding: 3rem; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 15px; margin: 2rem 0; border: 1px solid #e2e8f0;">
-        <h2 style="color: #1e293b; margin-bottom: 1rem;">🚀 Let's Build Your Portfolio!</h2>
-        <p style="font-size: 1.2rem; margin-bottom: 2rem; color: #64748b;">Start tracking your investments with our comprehensive tools</p>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin: 2rem 0;">
-            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
-                <h3 style="color: #3b82f6; margin-bottom: 1rem;">➕ Add Assets Manually</h3>
-                <p style="color: #64748b;">Start by adding individual stocks, ETFs, crypto, or other assets one by one</p>
-            </div>
-            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
-                <h3 style="color: #10b981; margin-bottom: 1rem;">📤 Upload Portfolio</h3>
-                <p style="color: #64748b;">Import your existing portfolio from CSV or JSON files</p>
-            </div>
-            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
-                <h3 style="color: #f59e0b; margin-bottom: 1rem;">📚 Learn as You Go</h3>
-                <p style="color: #64748b;">Use Education Mode to understand metrics and make better decisions</p>
-            </div>
-        </div>
-    </div>
-    """
-    st.markdown(guide_html, unsafe_allow_html=True)
+    """Guide for users with empty portfolios using native Streamlit."""
+    st.markdown("## 🚀 Let's Build Your Portfolio!")
+    st.markdown("Start tracking your investments with our comprehensive tools")
+    
+    # Feature cards using columns
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("### ➕ Add Assets Manually")
+        st.write("Start by adding individual stocks, ETFs, crypto, or other assets one by one")
+    
+    with col2:
+        st.markdown("### 📤 Upload Portfolio")
+        st.write("Import your existing portfolio from CSV or JSON files")
+    
+    with col3:
+        st.markdown("### 📚 Learn as You Go")
+        st.write("Use Education Mode to understand metrics and make better decisions")
 
 def display_portfolio_summary(metrics_df: pd.DataFrame):
-    """Enhanced portfolio summary with visual metrics."""
+    """Enhanced portfolio summary with native Streamlit metrics."""
     st.subheader("📈 Portfolio Summary")
     
     # Calculate key metrics
@@ -563,25 +1170,25 @@ def display_portfolio_summary(metrics_df: pd.DataFrame):
     total_pl = total_value - total_cost
     total_pl_pct = (total_pl / total_cost * 100) if total_cost > 0 else 0
     
-    # Create metric cards
+    # Create metric cards using native st.metric
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
-        st.markdown(create_metric_card(
+        st.metric(
             "💰 Total Value",
             f"${total_value:,.2f}",
-            help_text="Current market value of all holdings"
-        ), unsafe_allow_html=True)
+            help="Current market value of all holdings"
+        )
     
     with col2:
         pl_symbol = "📈" if total_pl >= 0 else "📉"
         delta_text = f"{total_pl_pct:+.2f}%" if not pd.isna(total_pl_pct) else "N/A"
-        st.markdown(create_metric_card(
+        st.metric(
             f"{pl_symbol} Total P/L",
             f"${total_pl:,.2f}",
             delta_text,
-            help_text="Profit/Loss vs purchase price"
-        ), unsafe_allow_html=True)
+            help="Profit/Loss vs purchase price"
+        )
     
     with col3:
         if not metrics_df['P/L %'].isna().all():
@@ -591,21 +1198,21 @@ def display_portfolio_summary(metrics_df: pd.DataFrame):
             best_performer = "N/A"
             best_pl = 0
             
-        st.markdown(create_metric_card(
+        st.metric(
             "🏆 Best Performer",
             str(best_performer),
             f"+{best_pl:.1f}%" if best_pl > 0 else "N/A",
-            help_text="Asset with highest return percentage"
-        ), unsafe_allow_html=True)
+            help="Asset with highest return percentage"
+        )
     
     with col4:
         diversification_score = len(metrics_df['Asset Type'].unique())
-        st.markdown(create_metric_card(
+        st.metric(
             "🎯 Diversification",
             f"{diversification_score} types",
             f"{len(metrics_df)} assets",
-            help_text="Number of different asset classes"
-        ), unsafe_allow_html=True)
+            help="Number of different asset classes"
+        )
 
 def display_dashboard_tabs(metrics_df: pd.DataFrame):
     """Display the main dashboard tabs with all analysis."""
@@ -633,7 +1240,7 @@ def display_dashboard_tabs(metrics_df: pd.DataFrame):
         display_recommendations(metrics_df)
 
 # ============================================================================
-# Analysis Display Functions
+# Analysis Display Functions - FIXED VERSIONS
 # ============================================================================
 
 def display_performance_analysis(metrics_df: pd.DataFrame):
@@ -974,47 +1581,15 @@ def display_holdings_detail(metrics_df: pd.DataFrame):
     if sort_by in display_df.columns:
         display_df = display_df.sort_values(sort_by, ascending=ascending)
     
-    # Format the dataframe for display
-    formatted_df = format_dataframe_for_display(display_df)
-    
-    # Display the table
+    # Display the table with native Streamlit styling
     st.dataframe(
-        formatted_df,
+        display_df,
         use_container_width=True,
         height=400
     )
     
     # Export options
     display_export_options(metrics_df)
-
-def format_dataframe_for_display(df: pd.DataFrame) -> pd.DataFrame:
-    """Format dataframe columns for better display."""
-    display_df = df.copy()
-    
-    # Format currency columns
-    currency_cols = ['Purchase Price', 'Current Price', 'Total Value', 'Cost Basis', 'P/L']
-    for col in currency_cols:
-        if col in display_df.columns:
-            display_df[col] = display_df[col].apply(lambda x: f"${x:,.2f}" if pd.notna(x) else "N/A")
-    
-    # Format percentage columns
-    percentage_cols = ['P/L %', 'Weight %', 'Volatility']
-    for col in percentage_cols:
-        if col in display_df.columns:
-            display_df[col] = display_df[col].apply(lambda x: f"{x:.2f}%" if pd.notna(x) else "N/A")
-    
-    # Format decimal columns
-    decimal_cols = ['Alpha', 'Beta', 'RSI']
-    for col in decimal_cols:
-        if col in display_df.columns:
-            if col == 'Alpha':
-                display_df[col] = display_df[col].apply(lambda x: f"{x:.3f}" if pd.notna(x) else "N/A")
-            elif col == 'Beta':
-                display_df[col] = display_df[col].apply(lambda x: f"{x:.2f}" if pd.notna(x) else "N/A")
-            elif col == 'RSI':
-                display_df[col] = display_df[col].apply(lambda x: f"{x:.1f}" if pd.notna(x) else "N/A")
-    
-    return display_df
 
 def display_export_options(metrics_df: pd.DataFrame):
     """Display export options for portfolio data."""
@@ -1053,27 +1628,44 @@ def generate_portfolio_report(metrics_df: pd.DataFrame):
     total_pl = total_value - total_cost
     total_pl_pct = (total_pl / total_cost * 100) if total_cost > 0 else 0
     
-    report_data = {
-        "report_date": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        "username": st.session_state.username,
-        "total_assets": len(metrics_df),
-        "total_value": total_value,
-        "total_cost": total_cost,
-        "total_pl": total_pl,
-        "total_pl_pct": total_pl_pct,
-        "asset_breakdown": metrics_df.groupby('Asset Type')['Total Value'].sum().to_dict(),
-        "top_performers": metrics_df.nlargest(5, 'P/L %')[['Ticker', 'P/L %']].to_dict('records'),
-        "recommendations": putils.generate_portfolio_recommendations(metrics_df)
-    }
+    # Display report using native Streamlit components
+    st.subheader("📊 Portfolio Report Summary")
     
-    # Display report summary
-    with st.expander("📊 Portfolio Report Summary", expanded=True):
-        st.json(report_data)
+    # Key metrics
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Assets", len(metrics_df))
+    with col2:
+        st.metric("Total Value", f"${total_value:,.2f}")
+    with col3:
+        st.metric("Total P/L", f"${total_pl:,.2f}")
+    with col4:
+        st.metric("Return %", f"{total_pl_pct:.2f}%")
+    
+    # Asset breakdown
+    st.subheader("Asset Type Breakdown")
+    asset_breakdown = metrics_df.groupby('Asset Type')['Total Value'].sum()
+    for asset_type, value in asset_breakdown.items():
+        st.write(f"• **{asset_type}**: ${value:,.2f}")
+    
+    # Top performers
+    st.subheader("Top 5 Performers")
+    top_performers = metrics_df.nlargest(5, 'P/L %')[['Ticker', 'P/L %']]
+    st.dataframe(top_performers, use_container_width=True)
+    
+    # Recommendations
+    recommendations = putils.generate_portfolio_recommendations(metrics_df)
+    if recommendations:
+        st.subheader("Recommendations")
+        for rec in recommendations[:3]:  # Show top 3 recommendations
+            rec_type = rec.get('type', 'info')
+            icon = {"warning": "⚠️", "success": "✅", "info": "💡"}.get(rec_type, "📌")
+            st.write(f"{icon} **{rec['title']}**: {rec['description']}")
     
     st.success("✅ Report generated successfully!")
 
 def display_recommendations(metrics_df: pd.DataFrame):
-    """Intelligent portfolio recommendations."""
+    """Intelligent portfolio recommendations using native Streamlit."""
     st.subheader("🎯 Portfolio Recommendations")
     
     recommendations = putils.generate_portfolio_recommendations(metrics_df)
@@ -1083,14 +1675,13 @@ def display_recommendations(metrics_df: pd.DataFrame):
             rec_type = rec.get('type', 'info')
             icon = {"warning": "⚠️", "success": "✅", "info": "💡"}.get(rec_type, "📌")
             
-            badge_class = "warning-badge" if rec_type == "warning" else "success-badge" if rec_type == "success" else "info-tooltip"
-            
-            st.markdown(f"""
-            <div class="{badge_class}">
-                {icon} <strong>{rec['title']}</strong><br>
-                {rec['description']}
-            </div>
-            """, unsafe_allow_html=True)
+            # Use native Streamlit alert components instead of HTML
+            if rec_type == "warning":
+                st.warning(f"{icon} **{rec['title']}**\n\n{rec['description']}")
+            elif rec_type == "success":
+                st.success(f"{icon} **{rec['title']}**\n\n{rec['description']}")
+            else:
+                st.info(f"{icon} **{rec['title']}**\n\n{rec['description']}")
     
     # Rebalancing suggestions
     display_rebalancing_suggestions(metrics_df)
@@ -1127,15 +1718,12 @@ def display_rebalancing_suggestions(metrics_df: pd.DataFrame):
             st.plotly_chart(suggested_fig, use_container_width=True)
 
 # ============================================================================
-# Asset Management Pages
+# Asset Management Pages - FIXED VERSIONS
 # ============================================================================
 
 def add_asset_page():
-    """Enhanced asset addition with improved UX and validation."""
-    st.markdown(
-        '<div class="main-header"><h1>➕ Add New Asset</h1><p>Expand your portfolio with new investments</p></div>',
-        unsafe_allow_html=True
-    )
+    """Enhanced asset addition with native Streamlit components."""
+    show_main_header("➕ Add New Asset", "Expand your portfolio with new investments")
     
     username = st.session_state.username
     df = st.session_state.portfolio_df
@@ -1199,7 +1787,7 @@ def add_asset_page():
             handle_asset_submission(ticker, purchase_price, quantity, asset_type, purchase_date, notes, username, df)
 
 def display_asset_preview(ticker: str, purchase_price: float, quantity: float):
-    """Display real-time asset preview."""
+    """Display real-time asset preview using native Streamlit."""
     if ticker and purchase_price > 0 and quantity > 0:
         st.subheader("👀 Preview")
         
@@ -1286,41 +1874,43 @@ def handle_asset_submission(ticker: str, purchase_price: float, quantity: float,
         show_error_with_details(f"Error adding asset: {str(e)}", traceback.format_exc())
 
 def upload_portfolio_page():
-    """Enhanced portfolio upload with better validation and preview."""
-    st.markdown(
-        '<div class="main-header"><h1>📤 Upload Portfolio</h1><p>Import your existing investment data</p></div>',
-        unsafe_allow_html=True
-    )
+    """Enhanced portfolio upload with native Streamlit components."""
+    show_main_header("📤 Upload Portfolio", "Import your existing investment data")
     
     username = st.session_state.username
     
-    # File format guide
+    # File format guide using native Streamlit
     display_file_format_guide()
     
     # File upload section
     handle_file_upload(username)
 
 def display_file_format_guide():
-    """Display file format requirements and templates."""
+    """Display file format requirements using native Streamlit."""
     with st.expander("📋 Supported File Formats & Requirements", expanded=True):
-        st.markdown("""
-        ### Required Columns:
+        st.markdown("### Required Columns:")
         
-        | Column | Description | Example |
-        |--------|-------------|---------|
-        | **Ticker** | Asset symbol | AAPL, TSLA, BTC-USD |
-        | **Purchase Price** | Price per unit when bought | 150.00 |
-        | **Quantity** | Number of units owned | 10 |
-        | **Asset Type** | Category of investment | Stock, ETF, Crypto |
+        # Create a sample table
+        requirements_df = pd.DataFrame({
+            'Column': ['Ticker', 'Purchase Price', 'Quantity', 'Asset Type'],
+            'Description': [
+                'Asset symbol',
+                'Price per unit when bought',
+                'Number of units owned',
+                'Category of investment'
+            ],
+            'Example': ['AAPL, TSLA, BTC-USD', '150.00', '10', 'Stock, ETF, Crypto']
+        })
         
-        ### Optional Columns:
-        - **Purchase Date**: When you bought the asset
-        - **Notes**: Additional information
+        st.dataframe(requirements_df, use_container_width=True)
         
-        ### Supported Formats:
-        - 📄 **CSV**: Comma-separated values
-        - 📋 **JSON**: JavaScript Object Notation
-        """)
+        st.markdown("### Optional Columns:")
+        st.write("• **Purchase Date**: When you bought the asset")
+        st.write("• **Notes**: Additional information")
+        
+        st.markdown("### Supported Formats:")
+        st.write("• 📄 **CSV**: Comma-separated values")
+        st.write("• 📋 **JSON**: JavaScript Object Notation")
         
         # Sample data for download
         sample_data = pd.DataFrame({
@@ -1432,10 +2022,10 @@ def validate_and_clean_portfolio_data(df: pd.DataFrame) -> Optional[pd.DataFrame
     return df
 
 def display_upload_preview(df: pd.DataFrame, merge_option: str, username: str):
-    """Display preview of uploaded data and import options."""
+    """Display preview of uploaded data using native Streamlit."""
     st.subheader("👀 Data Preview")
     
-    # Summary stats
+    # Summary stats using native metrics
     col1, col2, col3, col4 = st.columns(4)
     
     with col1:
@@ -1543,11 +2133,8 @@ def validate_portfolio_tickers(df: pd.DataFrame):
             st.success("✅ All tickers validated successfully!")
 
 def history_page():
-    """Enhanced portfolio history management."""
-    st.markdown(
-        '<div class="main-header"><h1>📚 Portfolio History</h1><p>Manage your saved portfolios</p></div>',
-        unsafe_allow_html=True
-    )
+    """Enhanced portfolio history management using native Streamlit."""
+    show_main_header("📚 Portfolio History", "Manage your saved portfolios")
     
     username = st.session_state.username
     files = putils.list_portfolios(username)
@@ -1566,29 +2153,24 @@ def history_page():
         display_portfolio_timeline(files)
 
 def display_empty_history_message():
-    """Display message when no portfolio history exists."""
-    empty_history_html = """
-    <div style="text-align: center; padding: 3rem; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 15px; margin: 2rem 0; border: 1px solid #e2e8f0;">
-        <h2 style="color: #1e293b;">📝 No Portfolio History Yet</h2>
-        <p style="font-size: 1.2rem; margin-bottom: 2rem; color: #64748b;">Start building your investment tracking history!</p>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin: 2rem 0;">
-            <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
-                <h4 style="color: #10b981;">➕ Add Assets</h4>
-                <p style="color: #64748b;">Start by adding individual investments</p>
-            </div>
-            <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
-                <h4 style="color: #3b82f6;">📤 Upload Files</h4>
-                <p style="color: #64748b;">Import from CSV or JSON files</p>
-            </div>
-            <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
-                <h4 style="color: #f59e0b;">💾 Auto-Save</h4>
-                <p style="color: #64748b;">Your portfolios are saved automatically</p>
-            </div>
-        </div>
-    </div>
-    """
-    st.markdown(empty_history_html, unsafe_allow_html=True)
+    """Display message when no portfolio history exists using native Streamlit."""
+    st.markdown("## 📝 No Portfolio History Yet")
+    st.markdown("Start building your investment tracking history!")
+    
+    # Feature cards using columns
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("### ➕ Add Assets")
+        st.write("Start by adding individual investments")
+    
+    with col2:
+        st.markdown("### 📤 Upload Files")
+        st.write("Import from CSV or JSON files")
+    
+    with col3:
+        st.markdown("### 💾 Auto-Save")
+        st.write("Your portfolios are saved automatically")
 
 def display_portfolio_management_interface(files: List[str], username: str):
     """Display portfolio management interface."""
@@ -1683,757 +2265,4 @@ def display_portfolio_details(selected_file: str):
             display_portfolio_file_preview(file_path, selected_file)
     
     except Exception as e:
-        show_error_with_details(f"Error loading file details: {e}")
-
-def display_portfolio_file_preview(file_path: str, selected_file: str):
-    """Display preview of portfolio file contents."""
-    with st.expander("👀 Portfolio Preview", expanded=True):
-        try:
-            # Load portfolio data
-            if selected_file.endswith('.csv'):
-                preview_df = pd.read_csv(file_path)
-            else:
-                preview_df = pd.read_json(file_path)
-            
-            if not preview_df.empty:
-                # Quick stats
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    st.metric("🎯 Assets", len(preview_df))
-                
-                with col2:
-                    if 'Purchase Price' in preview_df.columns and 'Quantity' in preview_df.columns:
-                        total_cost = (preview_df['Purchase Price'] * preview_df['Quantity']).sum()
-                        st.metric("💰 Total Cost", f"${total_cost:,.2f}")
-                
-                with col3:
-                    if 'Asset Type' in preview_df.columns:
-                        asset_types = preview_df['Asset Type'].nunique()
-                        st.metric("📊 Asset Types", asset_types)
-                
-                # Data preview
-                st.dataframe(preview_df, use_container_width=True, height=200)
-                
-                # Download options
-                display_file_download_options(preview_df, selected_file)
-            else:
-                st.warning("⚠️ Portfolio file appears to be empty")
-        
-        except Exception as e:
-            show_error_with_details(f"Error loading preview: {e}")
-
-def display_file_download_options(preview_df: pd.DataFrame, selected_file: str):
-    """Display download options for portfolio files."""
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # CSV download
-        csv_data = preview_df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            "📄 Download as CSV",
-            csv_data,
-            f"{selected_file.replace('.json', '.csv')}",
-            "text/csv"
-        )
-    
-    with col2:
-        # JSON download
-        json_data = preview_df.to_json(orient="records", indent=2).encode('utf-8')
-        st.download_button(
-            "📋 Download as JSON",
-            json_data,
-            f"{selected_file.replace('.csv', '.json')}",
-            "application/json"
-        )
-
-def display_portfolio_timeline(files: List[str]):
-    """Display portfolio timeline visualization."""
-    st.subheader("📈 Portfolio Timeline")
-    
-    timeline_data = []
-    for file in files:
-        try:
-            file_path = os.path.join(putils.PORTFOLIO_DIR, file)
-            file_stats = os.stat(file_path)
-            
-            # Try to load and calculate value
-            try:
-                df = pd.read_csv(file_path) if file.endswith('.csv') else pd.read_json(file_path)
-                if 'Purchase Price' in df.columns and 'Quantity' in df.columns:
-                    total_value = (df['Purchase Price'] * df['Quantity']).sum()
-                    asset_count = len(df)
-                else:
-                    total_value = 0
-                    asset_count = len(df) if not df.empty else 0
-            except:
-                total_value = 0
-                asset_count = 0
-            
-            timeline_data.append({
-                'File': file,
-                'Date': datetime.fromtimestamp(file_stats.st_mtime),
-                'Total Value': total_value,
-                'Asset Count': asset_count
-            })
-        except:
-            continue
-    
-    if timeline_data:
-        timeline_df = pd.DataFrame(timeline_data)
-        timeline_df = timeline_df.sort_values('Date')
-        
-        fig = px.line(
-            timeline_df,
-            x='Date',
-            y='Total Value',
-            title="📊 Portfolio Value Timeline",
-            markers=True,
-            hover_data=['Asset Count', 'File']
-        )
-        fig.update_layout(
-            yaxis_title="Total Portfolio Value ($)",
-            xaxis_title="Date"
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-# ============================================================================
-# Help and Education Page
-# ============================================================================
-
-def help_page():
-    """Enhanced help page with comprehensive guidance."""
-    st.markdown(
-        '<div class="main-header"><h1>❓ Help & Guide</h1><p>Learn how to maximize your investment management experience</p></div>',
-        unsafe_allow_html=True
-    )
-    
-    # Help navigation
-    help_tab1, help_tab2, help_tab3, help_tab4 = st.tabs([
-        "🚀 Getting Started",
-        "📊 Understanding Metrics", 
-        "🔧 Troubleshooting",
-        "💡 Best Practices"
-    ])
-    
-    with help_tab1:
-        display_getting_started_help()
-    
-    with help_tab2:
-        display_metrics_help()
-    
-    with help_tab3:
-        display_troubleshooting_help()
-    
-    with help_tab4:
-        display_best_practices_help()
-
-def display_getting_started_help():
-    """Display getting started guidance."""
-    st.subheader("🚀 Getting Started")
-    
-    st.markdown("""
-    ### Creating Your First Portfolio
-    
-    **Option 1: Add Assets Manually**
-    1. Go to the **"➕ Add Asset"** tab
-    2. Enter the ticker symbol (e.g., AAPL, MSFT, BTC-USD)
-    3. Input purchase price, quantity, and asset type
-    4. Click "Add Asset" to save
-    
-    **Option 2: Upload a File**
-    1. Go to the **"📤 Upload Portfolio"** tab
-    2. Download the CSV or JSON template
-    3. Fill in your portfolio data
-    4. Upload the file and import
-    
-    ### Required Information
-    - **Ticker**: The trading symbol (AAPL, MSFT, etc.)
-    - **Purchase Price**: What you paid per share/unit
-    - **Quantity**: How many shares/units you own
-    - **Asset Type**: Category (Stock, ETF, Crypto, etc.)
-    """)
-    
-    with st.expander("📋 Sample Portfolio Format"):
-        sample_data = pd.DataFrame({
-            'Ticker': ['AAPL', 'MSFT', 'GOOGL'],
-            'Purchase Price': [150.00, 300.00, 2500.00],
-            'Quantity': [10, 5, 2],
-            'Asset Type': ['Stock', 'Stock', 'Stock']
-        })
-        st.dataframe(sample_data)
-
-def display_metrics_help():
-    """Display metrics explanation."""
-    st.subheader("📊 Understanding Key Metrics")
-    
-    metrics_info = {
-        "💰 **Total Value**": "Current market value of your holdings (Current Price × Quantity)",
-        "📈 **P/L (Profit/Loss)**": "Difference between current value and what you paid",
-        "📊 **P/L %**": "Percentage return on your investment",
-        "⚖️ **Weight %**": "Percentage of total portfolio value",
-        "🎯 **RSI (Relative Strength Index)**": "Momentum indicator (0-100). Below 30 = oversold, above 70 = overbought",
-        "📊 **Volatility**": "Annual price volatility percentage. Higher = more risky",
-        "🔵 **Beta**": "Correlation with market. >1 = more volatile than market, <1 = less volatile",
-        "🟢 **Alpha**": "Excess return vs benchmark. Positive = outperforming market",
-        "📈 **Sharpe Ratio**": "Risk-adjusted return. Higher is better",
-        "⚠️ **VaR (Value at Risk)**": "Potential loss at 95% confidence level"
-    }
-    
-    for metric, description in metrics_info.items():
-        st.markdown(f"- {metric}: {description}")
-    
-    if st.session_state.education_mode:
-        st.info("💡 Education Mode is ON - you'll see helpful tooltips throughout the app!")
-
-def display_troubleshooting_help():
-    """Display troubleshooting information."""
-    st.subheader("🔧 Common Issues & Solutions")
-    
-    issues = {
-        "❌ Ticker not found": [
-            "Double-check the ticker symbol spelling",
-            "For crypto, use format like BTC-USD, ETH-USD",
-            "International stocks may need exchange suffix",
-            "Some delisted stocks won't have current prices"
-        ],
-        "⚠️ File upload errors": [
-            "Ensure your file has required columns: Ticker, Purchase Price, Quantity, Asset Type",
-            "Check that numeric columns contain valid numbers",
-            "Remove any completely empty rows",
-            "Save as UTF-8 encoding if using special characters"
-        ],
-        "📊 Missing data": [
-            "Some metrics require historical data which may not be available",
-            "New listings might not have enough price history",
-            "Market closed - some data may be delayed",
-            "Try refreshing data or checking your internet connection"
-        ],
-        "🔄 Slow performance": [
-            "Clear browser cache if pages load slowly",
-            "Large portfolios (>100 assets) may take longer to process",
-            "Use 'Refresh Data' button to update cached prices",
-            "Consider splitting very large portfolios"
-        ]
-    }
-    
-    for issue, solutions in issues.items():
-        with st.expander(issue):
-            for solution in solutions:
-                st.write(f"• {solution}")
-
-def display_best_practices_help():
-    """Display best practices guidance."""
-    st.subheader("💡 Best Practices")
-    
-    st.markdown("""
-    ### Portfolio Management
-    - **Diversify**: Don't put all money in one asset type
-    - **Regular Review**: Check your portfolio at least monthly
-    - **Keep Records**: Save notes about why you bought each asset
-    - **Risk Management**: Don't risk more than you can afford to lose
-    
-    ### Using This App
-    - **Education Mode**: Keep it on to learn about metrics
-    - **Save Regularly**: Your portfolios auto-save, but manual saves create backups
-    - **Historical Data**: Review portfolio history to track your progress
-    - **Validate Tickers**: Use the validation feature when uploading files
-    
-    ### Investment Principles
-    - **Long-term Focus**: Don't panic over short-term volatility
-    - **Dollar-Cost Averaging**: Consider regular, consistent investments
-    - **Rebalancing**: Periodically adjust allocations to target percentages
-    - **Research**: Use the metrics as starting points, not final decisions
-    """)
-    
-    st.warning("⚠️ **Disclaimer**: This app is for informational purposes only. Not financial advice. Always consult professionals for investment decisions.")
-
-# ============================================================================
-# Authentication Pages
-# ============================================================================
-
-def display_auth_page():
-    """Enhanced authentication page with better UX."""
-    # Header
-    auth_header_html = """
-    <div style="text-align: center; padding: 2rem 0;">
-        <h1 style="background: linear-gradient(90deg, #3b82f6 0%, #10b981 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 3rem; margin-bottom: 1rem;">
-            📊 Portfolio Manager Pro
-        </h1>
-        <p style="font-size: 1.3rem; color: #64748b; margin-bottom: 2rem;">
-            Your comprehensive investment dashboard with real-time analytics
-        </p>
-    </div>
-    """
-    st.markdown(auth_header_html, unsafe_allow_html=True)
-    
-    # Feature highlights
-    display_feature_highlights()
-    
-    st.markdown("---")
-    
-    # Authentication tabs
-    tab1, tab2 = st.tabs(["🔐 Sign In", "📝 Create Account"])
-    
-    with tab1:
-        display_login_form()
-    
-    with tab2:
-        display_registration_form()
-    
-    # Security notice
-    display_security_notice()
-
-def display_feature_highlights():
-    """Display app feature highlights."""
-    col1, col2, col3 = st.columns(3)
-    
-    features = [
-        ("📈 Real-Time Analytics", "Live market data with advanced metrics like Alpha, Beta, RSI, and Volatility"),
-        ("📊 Interactive Dashboards", "Beautiful visualizations for portfolio allocation, performance, and risk analysis"), 
-        ("🎯 Smart Recommendations", "AI-powered insights for diversification and portfolio optimization")
-    ]
-    
-    for i, (title, description) in enumerate(features):
-        with [col1, col2, col3][i]:
-            feature_html = f"""
-            <div style="text-align: center; padding: 1.5rem; background: white; border-radius: 15px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); margin: 1rem 0; border: 1px solid #e2e8f0; height: 200px; display: flex; flex-direction: column; justify-content: center;">
-                <h3 style="color: #1e293b; margin-bottom: 1rem;">{title}</h3>
-                <p style="color: #64748b; margin: 0;">{description}</p>
-            </div>
-            """
-            st.markdown(feature_html, unsafe_allow_html=True)
-
-def display_security_notice():
-    """Display security information."""
-    security_html = """
-    <div style="text-align: center; margin-top: 2rem; padding: 1rem; background-color: #f8fafc; border-radius: 10px; border: 1px solid #e2e8f0;">
-        <small style="color: #64748b;">
-            🔒 <strong>Your data is secure:</strong> Passwords are encrypted with PBKDF2-SHA256 • 
-            All portfolio data is stored locally • No personal information is shared
-        </small>
-    </div>
-    """
-    st.markdown(security_html, unsafe_allow_html=True)
-
-def display_login_form():
-    """Enhanced login form with better validation."""
-    st.markdown("### 🔐 Welcome Back!")
-    st.write("Access your portfolio dashboard")
-    
-    with st.form("login_form"):
-        username_input = st.text_input(
-            "👤 Username",
-            placeholder="Enter your username",
-            help="The username you registered with"
-        )
-        
-        password_input = st.text_input(
-            "🔒 Password",
-            type="password",
-            placeholder="Enter your password",
-            help="Your secure password"
-        )
-        
-        remember_me = st.checkbox("🔄 Keep me signed in", help="Stay logged in for this session")
-        
-        col1, col2 = st.columns([1, 2])
-        
-        with col1:
-            submitted = st.form_submit_button("🚀 Sign In", type="primary")
-        
-        if submitted:
-            handle_login_submission(username_input, password_input)
-
-def handle_login_submission(username_input: str, password_input: str):
-    """Handle login form submission."""
-    if not username_input.strip():
-        st.error("❌ Please enter your username")
-    elif not password_input:
-        st.error("❌ Please enter your password")
-    else:
-        with st.spinner("🔍 Verifying credentials..."):
-            time.sleep(0.5)  # Brief delay for UX
-            
-            if authenticate_user(username_input.strip(), password_input):
-                # Successful login
-                st.session_state.authenticated = True
-                st.session_state.username = username_input.strip()
-                st.session_state.first_login = True
-                st.session_state.show_welcome = True
-                
-                # Load user's portfolio
-                safe_load_portfolio(username_input.strip())
-                
-                st.success("✅ Welcome back! Redirecting to your dashboard...")
-                logger.info(f"User logged in: {username_input.strip()}")
-                time.sleep(1)
-                st.rerun()
-            else:
-                st.error("❌ Invalid username or password")
-                
-                if st.session_state.education_mode:
-                    with st.expander("🔧 Login Help"):
-                        st.markdown("""
-                        **Trouble signing in?**
-                        - Double-check your username and password
-                        - Make sure Caps Lock is off
-                        - Username is case-sensitive
-                        - Contact support if you forgot your credentials
-                        """)
-
-def display_registration_form():
-    """Enhanced registration form with validation."""
-    st.markdown("### 📝 Join Portfolio Manager Pro")
-    st.write("Create your account to start tracking investments")
-    
-    with st.form("register_form"):
-        new_username = st.text_input(
-            "👤 Choose Username",
-            placeholder="Enter a unique username",
-            help="3-20 characters, letters and numbers only"
-        )
-        
-        new_password = st.text_input(
-            "🔒 Create Password",
-            type="password",
-            placeholder="Minimum 6 characters",
-            help="Use a strong password with letters, numbers, and symbols"
-        )
-        
-        confirm_password = st.text_input(
-            "🔒 Confirm Password",
-            type="password",
-            placeholder="Re-enter your password",
-            help="Must match the password above"
-        )
-        
-        # Password strength indicator
-        if new_password:
-            strength = putils.check_password_strength(new_password)
-            strength_colors = {"Weak": "🔴", "Medium": "🟡", "Strong": "🟢"}
-            st.write(f"Password Strength: {strength_colors.get(strength, '⚪')} {strength}")
-        
-        agree_terms = st.checkbox(
-            "✅ I agree to the Terms of Service and Privacy Policy",
-            help="Required to create an account"
-        )
-        
-        col1, col2 = st.columns([1, 2])
-        
-        with col1:
-            submitted_reg = st.form_submit_button("✨ Create Account", type="primary")
-        
-        if submitted_reg:
-            handle_registration_submission(new_username, new_password, confirm_password, agree_terms)
-
-def handle_registration_submission(new_username: str, new_password: str, confirm_password: str, agree_terms: bool):
-    """Handle registration form submission."""
-    # Validation
-    errors = []
-    username_clean = new_username.strip()
-    
-    if not username_clean:
-        errors.append("Username is required")
-    elif len(username_clean) < 3:
-        errors.append("Username must be at least 3 characters")
-    elif len(username_clean) > 20:
-        errors.append("Username must be less than 20 characters")
-    elif not username_clean.replace('_', '').isalnum():
-        errors.append("Username can only contain letters, numbers, and underscores")
-    
-    if not new_password:
-        errors.append("Password is required")
-    elif len(new_password) < 6:
-        errors.append("Password must be at least 6 characters")
-    elif new_password != confirm_password:
-        errors.append("Passwords do not match")
-    
-    if not agree_terms:
-        errors.append("You must agree to the Terms of Service")
-    
-    if errors:
-        for error in errors:
-            st.error(f"❌ {error}")
-    else:
-        with st.spinner("👤 Creating your account..."):
-            time.sleep(0.5)  # Brief delay for UX
-            
-            if register_user(username_clean, new_password):
-                st.success("🎉 Account created successfully!")
-                st.info("👆 You can now sign in using the Sign In tab")
-                st.balloons()
-                logger.info(f"New user registered: {username_clean}")
-            else:
-                st.error("❌ Username already exists. Please choose another.")
-
-# ============================================================================
-# Sidebar and Navigation
-# ============================================================================
-
-def create_sidebar():
-    """Enhanced sidebar with user info and controls."""
-    with st.sidebar:
-        if st.session_state.authenticated:
-            # User profile section
-            profile_html = f"""
-            <div class="sidebar-section">
-                <h3>👤 Welcome Back!</h3>
-                <p><strong>{st.session_state.username}</strong></p>
-                <small>Last login: {datetime.now().strftime('%Y-%m-%d %H:%M')}</small>
-            </div>
-            """
-            st.markdown(profile_html, unsafe_allow_html=True)
-            
-            # Portfolio quick stats
-            display_sidebar_portfolio_stats()
-            
-            # Navigation
-            st.markdown("### 🧭 Navigation")
-            page = st.radio(
-                "Choose a page:",
-                [
-                    "📊 Dashboard",
-                    "➕ Add Asset",
-                    "📤 Upload Portfolio",
-                    "📚 Portfolio History",
-                    "❓ Help",
-                    "🚪 Sign Out"
-                ],
-                label_visibility="collapsed"
-            )
-            
-            st.markdown("---")
-            
-            # Settings
-            display_sidebar_settings()
-            
-            # Quick actions
-            display_sidebar_quick_actions()
-            
-            # Footer
-            display_sidebar_footer()
-            
-            return page
-        
-        else:
-            # Unauthenticated sidebar
-            display_unauthenticated_sidebar()
-            return None
-
-def display_sidebar_portfolio_stats():
-    """Display portfolio quick stats in sidebar."""
-    if st.session_state.portfolio_df is not None and not st.session_state.portfolio_df.empty:
-        df = st.session_state.portfolio_df
-        asset_count = len(df)
-        
-        if 'Purchase Price' in df.columns and 'Quantity' in df.columns:
-            total_cost = (df['Purchase Price'] * df['Quantity']).sum()
-        else:
-            total_cost = 0
-        
-        stats_html = f"""
-        <div class="sidebar-section">
-            <h4>📊 Portfolio Quick Stats</h4>
-            <p>🎯 <strong>{asset_count}</strong> assets</p>
-            <p>💰 <strong>${total_cost:,.0f}</strong> invested</p>
-            <p>📈 <strong>{df['Asset Type'].nunique()}</strong> asset types</p>
-        </div>
-        """
-        st.markdown(stats_html, unsafe_allow_html=True)
-
-def display_sidebar_settings():
-    """Display settings section in sidebar."""
-    st.markdown("### ⚙️ Settings")
-    
-    st.session_state.education_mode = st.checkbox(
-        "📚 Education Mode",
-        value=st.session_state.education_mode,
-        help="Show helpful tooltips and explanations"
-    )
-    
-    timeframe = st.selectbox(
-        "📅 Data Timeframe",
-        ["1mo", "3mo", "6mo", "1y", "2y"],
-        index=2,
-        help="Historical data period for analysis"
-    )
-    st.session_state.selected_timeframe = timeframe
-
-def display_sidebar_quick_actions():
-    """Display quick actions section in sidebar."""
-    st.markdown("### ⚡ Quick Actions")
-    
-    if st.button("🔄 Refresh All Data", help="Update all market data"):
-        clear_cache()
-        st.success("✅ Data refreshed!")
-        st.rerun()
-    
-    if st.session_state.portfolio_df is not None and not st.session_state.portfolio_df.empty:
-        if st.button("💾 Save Current Portfolio", help="Save current state"):
-            try:
-                putils.save_portfolio(st.session_state.username, st.session_state.portfolio_df)
-                st.success("✅ Portfolio saved!")
-            except Exception as e:
-                st.error(f"❌ Save failed: {e}")
-
-def display_sidebar_footer():
-    """Display sidebar footer."""
-    st.markdown("---")
-    footer_html = f"""
-    <div style="text-align: center; color: #64748b; font-size: 0.8rem;">
-        <p>📊 Portfolio Manager Pro v{st.session_state.app_version}</p>
-        <p>Built with ❤️ using Streamlit</p>
-    </div>
-    """
-    st.markdown(footer_html, unsafe_allow_html=True)
-
-def display_unauthenticated_sidebar():
-    """Display sidebar for unauthenticated users."""
-    signin_html = """
-    <div class="sidebar-section">
-        <h3>🔐 Please Sign In</h3>
-        <p>Access your portfolio dashboard by signing in or creating an account.</p>
-    </div>
-    """
-    st.markdown(signin_html, unsafe_allow_html=True)
-    
-    st.markdown("### 🌟 Features")
-    st.markdown("""
-    - 📈 **Real-time market data**
-    - 📊 **Interactive charts**
-    - 🎯 **Risk analysis**
-    - 💡 **Smart recommendations**
-    - 📱 **Mobile responsive**
-    - 🔒 **Secure & private**
-    """)
-
-# ============================================================================
-# Logout Functionality
-# ============================================================================
-
-def display_logout_confirmation():
-    """Enhanced logout confirmation."""
-    st.markdown(
-        '<div class="main-header"><h1>🚪 Sign Out</h1><p>Thanks for using Portfolio Manager Pro!</p></div>',
-        unsafe_allow_html=True
-    )
-    
-    col1, col2, col3 = st.columns([1, 2, 1])
-    
-    with col2:
-        logout_html = f"""
-        <div style="text-align: center; padding: 2rem; background: white; border-radius: 15px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
-            <h3 style="color: #1e293b; margin-bottom: 1rem;">👋 See you soon, {st.session_state.username}!</h3>
-            <p style="color: #64748b; margin-bottom: 1rem;">Your portfolio data has been saved securely.</p>
-            <p style="color: #64748b;">You can return anytime to continue tracking your investments.</p>
-        </div>
-        """
-        st.markdown(logout_html, unsafe_allow_html=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        col_a, col_b = st.columns(2)
-        
-        with col_a:
-            if st.button("⬅️ Stay Signed In", type="secondary"):
-                st.info("👍 Continuing your session...")
-                time.sleep(1)
-                st.rerun()
-        
-        with col_b:
-            if st.button("🚪 Confirm Sign Out", type="primary"):
-                handle_logout()
-
-def handle_logout():
-    """Handle user logout process."""
-    username = st.session_state.username
-    
-    # Clear session state
-    for key in list(st.session_state.keys()):
-        del st.session_state[key]
-    
-    # Reinitialize
-    initialize_session_state()
-    
-    st.success("👋 You have been signed out successfully!")
-    logger.info(f"User logged out: {username}")
-    time.sleep(1)
-    st.rerun()
-
-# ============================================================================
-# Main Application Logic
-# ============================================================================
-
-def main():
-    """Enhanced main application with improved error handling."""
-    try:
-        # Create sidebar and get navigation choice
-        selected_page = create_sidebar()
-        
-        if not st.session_state.authenticated:
-            display_auth_page()
-            return
-        
-        # Show welcome message for new sessions
-        show_welcome_message()
-        
-        # Main content routing
-        route_to_page(selected_page)
-        
-    except Exception as e:
-        handle_application_error(e)
-
-def route_to_page(selected_page: str):
-    """Route to the selected page."""
-    if selected_page == "📊 Dashboard":
-        display_portfolio_overview()
-    elif selected_page == "➕ Add Asset":
-        add_asset_page()
-    elif selected_page == "📤 Upload Portfolio":
-        upload_portfolio_page()
-    elif selected_page == "📚 Portfolio History":
-        history_page()
-    elif selected_page == "❓ Help":
-        help_page()
-    elif selected_page == "🚪 Sign Out":
-        display_logout_confirmation()
-
-def handle_application_error(e: Exception):
-    """Handle application-level errors."""
-    error_msg = f"An unexpected error occurred: {str(e)}"
-    st.error(f"❌ {error_msg}")
-    logger.error(f"Application error: {e}", exc_info=True)
-    
-    if st.session_state.education_mode:
-        with st.expander("🔧 Error Details (for debugging)"):
-            st.code(traceback.format_exc())
-    
-    col1, col2, col3 = st.columns([1, 1, 1])
-    
-    with col1:
-        if st.button("🔄 Refresh Page"):
-            st.rerun()
-    
-    with col2:
-        if st.button("🏠 Go to Dashboard"):
-            # Reset to dashboard
-            st.session_state.show_welcome = False
-            st.rerun()
-    
-    with col3:
-        if st.button("🆘 Reset Application"):
-            # Clear all session state and restart
-            for key in list(st.session_state.keys()):
-                if key not in ['authenticated', 'username']:  # Keep login status
-                    del st.session_state[key]
-            initialize_session_state()
-            st.session_state.authenticated = True  # Restore auth status
-            st.rerun()
-
-# ============================================================================
-# Application Entry Point
-# ============================================================================
-
-if __name__ == "__main__":
-    main()
+        show_error
