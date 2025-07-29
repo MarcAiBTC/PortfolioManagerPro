@@ -165,6 +165,52 @@ def show_error_with_details(error_msg: str, details: str = None):
         with st.expander("🔍 Error Details"):
             st.code(details)
 
+def show_welcome_message():
+    """Display welcome message and navigation guide."""
+    # Header principal
+    st.markdown("""
+    <div style="text-align: center; padding: 1.5rem 0;">
+        <h1>👋 Welcome to Portfolio Manager Pro!</h1>
+        <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem;">
+            Your comprehensive investment portfolio management solution
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Cards informativas
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.info("""
+        **📊 Portfolio Management**
+        
+        • Load existing portfolios
+        • Create new portfolios
+        • Edit and update holdings
+        """)
+    
+    with col2:
+        st.success("""
+        **📈 Analytics & Insights**
+        
+        • Performance tracking
+        • Risk analysis
+        • Asset allocation charts
+        """)
+    
+    with col3:
+        st.warning("""
+        **📋 Reports & Export**
+        
+        • Generate detailed reports
+        • Export to CSV/JSON
+        • Portfolio summaries
+        """)
+    
+    # Call-to-action
+    st.markdown("---")
+    st.markdown("**👈 Get started by selecting an option from the sidebar!**")
+
 def safe_load_portfolio(username: str, filename: Optional[str] = None) -> bool:
     """Safely load portfolio with comprehensive error handling."""
     try:
