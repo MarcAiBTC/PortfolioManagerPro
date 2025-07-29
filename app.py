@@ -21,6 +21,7 @@ import logging
 import warnings
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List, Tuple
+from typing import Optional, List
 
 import pandas as pd
 import numpy as np
@@ -177,9 +178,43 @@ def safe_load_portfolio(username: str, filename: Optional[str] = None) -> bool:
             
             if missing_cols:
                 show_error_with_details(f"Error loading file details: {e}")
+                return False
             else:
-                pass  
-                
+                # Portfolio loaded successfully
+                st.session_state.portfolio_df = df  # Guardar en session_state si es necesario
+                return True
+        else:
+            show_error_with_details("Portfolio file is empty or could not be loaded")
+            return False
+            
+    except Exception as e:
+        show_error_with_details(f"Error loading portfolio: {str(e)}")
+        return False           
+
+def display_file_download_options(preview_df: pd.DataFrame, selected_file: str):
+    """Display download options for portfolio files."""
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # CSV download
+        csv_data = preview_df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            "📄 Download as CSV",
+            csv_data,
+            f"{selected_file.replace('.json', '.csv')}",
+            "text/csv"
+        )
+    
+    with col2:
+        # JSON download
+        json_data = preview_df.to_json(orient="records", indent=2).encode('utf-8')
+        st.download_button(
+            "📋 Download as JSON",
+            json_data,
+            f"{selected_file.replace('.csv', '.json')}",
+            "application/json"
+        )
+
 def display_portfolio_file_preview(file_path: str, selected_file: str):
     """Display preview of portfolio file contents."""
     with st.expander("👀 Portfolio Preview", expanded=True):
@@ -217,30 +252,6 @@ def display_portfolio_file_preview(file_path: str, selected_file: str):
         
         except Exception as e:
             show_error_with_details(f"Error loading preview: {e}")
-
-def display_file_download_options(preview_df: pd.DataFrame, selected_file: str):
-    """Display download options for portfolio files."""
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # CSV download
-        csv_data = preview_df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            "📄 Download as CSV",
-            csv_data,
-            f"{selected_file.replace('.json', '.csv')}",
-            "text/csv"
-        )
-    
-    with col2:
-        # JSON download
-        json_data = preview_df.to_json(orient="records", indent=2).encode('utf-8')
-        st.download_button(
-            "📋 Download as JSON",
-            json_data,
-            f"{selected_file.replace('.csv', '.json')}",
-            "application/json"
-        )
 
 def display_portfolio_timeline(files: List[str]):
     """Display portfolio timeline visualization."""
