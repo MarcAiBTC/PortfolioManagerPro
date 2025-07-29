@@ -182,7 +182,7 @@ def show_welcome_message():
         <div class="welcome-banner">
             <h2>🎉 Welcome to Portfolio Manager Pro, {st.session_state.username}!</h2>
             <p><strong>Your comprehensive investment dashboard is ready!</strong></p>
-            
+
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
                 <div>
                     <h4>📊 What you can do:</h4>
