@@ -183,32 +183,28 @@ def show_welcome_message():
             <h2>🎉 Welcome to Portfolio Manager Pro, {st.session_state.username}!</h2>
             <p><strong>Your comprehensive investment dashboard is ready!</strong></p>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-                <div>
-                    <h4>📊 What you can do:</h4>
-                    <ul>
-                        <li>📈 <strong>Track performance</strong> with real-time data</li>
-                        <li>📋 <strong>Add assets</strong> manually or upload CSV/JSON</li>
-                        <li>🎯 <strong>Analyze risk</strong> with Alpha, Beta, RSI metrics</li>
-                        <li>📊 <strong>Visualize allocation</strong> with interactive charts</li>
-                    </ul>
-                </div>
-                <div>
-                    <h4>🚀 Quick Start:</h4>
-                    <ol>
-                        <li>Add some assets or upload a portfolio</li>
-                        <li>Explore the interactive dashboards</li>
-                        <li>Use tooltips (ℹ️) to learn about metrics</li>
-                        <li>Check diversification recommendations</li>
-                    </ol>
-                </div>
-            </div>
-            
-            <div style="margin-top: 1rem; padding: 1rem; background-color: rgba(255,255,255,0.8); border-radius: 8px;">
-                💡 <strong>Pro Tip:</strong> Enable Education Mode in the sidebar to see helpful explanations throughout the app!
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+           col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader("📊 What you can do:")
+    st.markdown("""
+    - 📈 **Track performance** with real-time data
+    - 📋 **Add assets** manually or upload CSV/JSON
+    - 🎯 **Analyze risk** with Alpha, Beta, RSI metrics
+    - 📊 **Visualize allocation** with interactive charts
+    """)
+
+with col2:
+    st.subheader("🚀 Quick Start:")
+    st.markdown("""
+    1. Add some assets or upload a portfolio
+    2. Explore the interactive dashboards
+    3. Use tooltips (ℹ️) to learn about metrics
+    4. Check diversification recommendations
+    """)
+
+# Pro tip box
+st.info("💡 **Pro Tip:** Enable Education Mode in the sidebar to see helpful explanations throughout the app!")
         
         col1, col2, col3 = st.columns([1, 1, 2])
         with col1:
