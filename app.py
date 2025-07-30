@@ -155,9 +155,68 @@ def add_asset_page():
     st.write("Aquí podrás añadir un nuevo activo a tu cartera.")
 
 def display_portfolio_overview():
-    st.title("Portfolio Overview")
-    st.write("Aquí se mostrará un resumen de la cartera.")
-    # Aquí puedes añadir gráficos, KPIs, o tablas
+    """Enhanced portfolio overview with native Streamlit components."""
+    show_main_header("📊 Portfolio Dashboard", "Real-time analysis of your investments")
+    
+    username = st.session_state.username
+    
+    # Portfolio Selection Section
+    st.subheader("🗂️ Portfolio Selection")
+    portfolios = putils.list_portfolios(username)
+    
+    if portfolios:
+        col1, col2, col3 = st.columns([3, 1, 1])
+        
+        with col1:
+            default_index = 0
+            if st.session_state.selected_portfolio_file in portfolios:
+                try:
+                    default_index = portfolios.index(st.session_state.selected_portfolio_file)
+                except ValueError:
+                    pass
+            
+            selected_file = st.selectbox(
+                "Select a portfolio to analyze:",
+                portfolios,
+                index=default_index,
+                help="Choose from your saved portfolios"
+            )
+            
+            if selected_file != st.session_state.selected_portfolio_file:
+                safe_load_portfolio(username, selected_file)
+        
+        with col2:
+            if st.button("🔄 Refresh Data", help="Update prices and recalculate metrics"):
+                clear_cache()
+                if st.session_state.portfolio_df is not None:
+                    st.rerun()
+        
+        with col3:
+            if st.button("📊 Quick Stats", help="Show portfolio summary"):
+                show_portfolio_quick_stats()
+    else:
+        display_empty_portfolio_guide()
+
+    df = st.session_state.portfolio_df
+    if df is None or df.empty:
+        return
+
+    # Fetch and process data
+    try:
+        with st.spinner("📡 Fetching real-time market data..."):
+            metrics_df = fetch_and_compute_metrics(df)
+            
+        if metrics_df is None or metrics_df.empty:
+            st.error("❌ Unable to fetch market data. Please try again later.")
+            return
+            
+    except Exception as e:
+        show_error_with_details("Error processing portfolio data", str(e))
+        return
+
+    # Display components
+    display_portfolio_summary(metrics_df)
+    display_dashboard_tabs(metrics_df)
 
 def show_main_header(title: str, subtitle: str):
     """Display main header with proper Streamlit components."""
@@ -1095,70 +1154,6 @@ def show_welcome_message():
 # ============================================================================
 # Portfolio Overview and Dashboard - FIXED VERSION
 # ============================================================================
-
-def display_portfolio_overview():
-    """Enhanced portfolio overview with native Streamlit components."""
-    show_main_header("📊 Portfolio Dashboard", "Real-time analysis of your investments")
-    
-    username = st.session_state.username
-    
-    # Portfolio Selection Section
-    st.subheader("🗂️ Portfolio Selection")
-    portfolios = putils.list_portfolios(username)
-    
-    if portfolios:
-        col1, col2, col3 = st.columns([3, 1, 1])
-        
-        with col1:
-            default_index = 0
-            if st.session_state.selected_portfolio_file in portfolios:
-                try:
-                    default_index = portfolios.index(st.session_state.selected_portfolio_file)
-                except ValueError:
-                    pass
-            
-            selected_file = st.selectbox(
-                "Select a portfolio to analyze:",
-                portfolios,
-                index=default_index,
-                help="Choose from your saved portfolios"
-            )
-            
-            if selected_file != st.session_state.selected_portfolio_file:
-                safe_load_portfolio(username, selected_file)
-        
-        with col2:
-            if st.button("🔄 Refresh Data", help="Update prices and recalculate metrics"):
-                clear_cache()
-                if st.session_state.portfolio_df is not None:
-                    st.rerun()
-        
-        with col3:
-            if st.button("📊 Quick Stats", help="Show portfolio summary"):
-                show_portfolio_quick_stats()
-    else:
-        display_empty_portfolio_guide()
-
-    df = st.session_state.portfolio_df
-    if df is None or df.empty:
-        return
-
-    # Fetch and process data
-    try:
-        with st.spinner("📡 Fetching real-time market data..."):
-            metrics_df = fetch_and_compute_metrics(df)
-            
-        if metrics_df is None or metrics_df.empty:
-            st.error("❌ Unable to fetch market data. Please try again later.")
-            return
-            
-    except Exception as e:
-        show_error_with_details("Error processing portfolio data", str(e))
-        return
-
-    # Display components
-    display_portfolio_summary(metrics_df)
-    display_dashboard_tabs(metrics_df)
 
 def clear_cache():
     """Clear all cached data."""
