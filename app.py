@@ -143,6 +143,17 @@ initialize_session_state()
 # ============================================================================
 # UI Helper Functions - FIXED VERSIONS
 # ============================================================================
+
+def upload_portfolio_page():
+    st.title("Subir archivo de cartera")
+    uploaded_file = st.file_uploader("Sube tu archivo JSON", type=["json"])
+    if uploaded_file is not None:
+        st.success("Archivo cargado correctamente.")
+        
+def add_asset_page():
+    st.title("Añadir Activo")
+    st.write("Aquí podrás añadir un nuevo activo a tu cartera.")
+
 def display_portfolio_overview():
     st.title("Portfolio Overview")
     st.write("Aquí se mostrará un resumen de la cartera.")
