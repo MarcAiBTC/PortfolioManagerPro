@@ -24,6 +24,7 @@ import json
 import logging
 import time
 import warnings
+import yfinance as yf
 from datetime import datetime, timedelta
 from typing import List, Tuple, Dict, Optional, Iterable, Union
 
