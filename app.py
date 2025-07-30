@@ -222,6 +222,485 @@ def display_portfolio_overview():
     display_portfolio_summary(metrics_df)
     display_dashboard_tabs(metrics_df)
 
+# ============================================================================
+# Analysis Display Functions - FIXED VERSIONS
+# ============================================================================
+
+def display_performance_analysis(metrics_df: pd.DataFrame):
+    """Enhanced performance analysis with multiple chart types."""
+    st.subheader("📊 Performance Analysis")
+    
+    if metrics_df.empty:
+        st.info("No data available for performance analysis.")
+        return
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # P/L Distribution Chart
+        top_performers = metrics_df.nlargest(10, 'P/L')
+        if not top_performers.empty:
+            fig = px.bar(
+                top_performers,
+                x='Ticker',
+                y='P/L',
+                color='P/L',
+                color_continuous_scale=['red', 'yellow', 'green'],
+                title="🏆 Top 10 Performers by Profit/Loss ($)",
+                labels={'P/L': 'Profit/Loss ($)'}
+            )
+            fig.update_layout(
+                height=400,
+                showlegend=False,
+                xaxis_title="Asset",
+                yaxis_title="Profit/Loss ($)"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        # Performance percentage chart
+        if not metrics_df['P/L %'].isna().all():
+            top_pct_performers = metrics_df.nlargest(10, 'P/L %')
+            fig = px.bar(
+                top_pct_performers,
+                x='Ticker',
+                y='P/L %',
+                color='P/L %',
+                color_continuous_scale=['red', 'yellow', 'green'],
+                title="📈 Top 10 Performers by Return (%)",
+                labels={'P/L %': 'Return (%)'}
+            )
+            fig.update_layout(
+                height=400,
+                showlegend=False,
+                xaxis_title="Asset",
+                yaxis_title="Return (%)"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+    
+    # Risk vs Return Analysis
+    if 'Alpha' in metrics_df.columns and 'Beta' in metrics_df.columns:
+        display_risk_return_analysis(metrics_df)
+
+def display_risk_return_analysis(metrics_df: pd.DataFrame):
+    """Display risk vs return scatter plot analysis."""
+    st.subheader("🎯 Risk vs Return Analysis")
+    
+    # Filter out NaN values for better visualization
+    clean_df = metrics_df.dropna(subset=['Alpha', 'Beta'])
+    
+    if clean_df.empty:
+        st.info("Insufficient data for risk-return analysis.")
+        return
+    
+    fig = px.scatter(
+        clean_df,
+        x='Beta',
+        y='Alpha',
+        size='Total Value',
+        color='P/L %',
+        hover_name='Ticker',
+        hover_data=['P/L', 'RSI', 'Volatility'],
+        title="📊 Risk-Return Profile (Alpha vs Beta)",
+        labels={'Beta': 'Beta (Market Risk)', 'Alpha': 'Alpha (Excess Return)'},
+        color_continuous_scale='RdYlGn'
+    )
+    
+    # Add quadrant lines
+    fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5)
+    fig.add_vline(x=1, line_dash="dash", line_color="gray", opacity=0.5)
+    
+    fig.update_layout(height=500)
+    st.plotly_chart(fig, use_container_width=True)
+    
+    if st.session_state.education_mode:
+        with st.expander("📚 Understanding Risk-Return Analysis"):
+            st.markdown("""
+            **Alpha (Y-axis):** Measures excess return vs benchmark
+            - **Positive:** Outperforming the market
+            - **Negative:** Underperforming the market
+            
+            **Beta (X-axis):** Measures volatility vs market
+            - **Beta > 1:** More volatile than market
+            - **Beta < 1:** Less volatile than market
+            - **Beta = 1:** Moves with market
+            
+            **Ideal Quadrant:** High Alpha, Low Beta (top-left)
+            """)
+
+def display_allocation_analysis(metrics_df: pd.DataFrame):
+    """Asset allocation visualizations."""
+    st.subheader("🥧 Asset Allocation Analysis")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Asset Type Distribution
+        allocation_by_type = metrics_df.groupby('Asset Type')['Total Value'].sum().reset_index()
+        
+        if not allocation_by_type.empty:
+            fig = px.pie(
+                allocation_by_type,
+                values='Total Value',
+                names='Asset Type',
+                title="📊 Allocation by Asset Type",
+                color_discrete_sequence=px.colors.qualitative.Set3
+            )
+            fig.update_traces(textposition='inside', textinfo='percent+label')
+            fig.update_layout(height=400)
+            st.plotly_chart(fig, use_container_width=True)
+    
+    with col2:
+        # Top Holdings by Value
+        top_holdings = metrics_df.nlargest(8, 'Total Value')
+        
+        if not top_holdings.empty:
+            fig = px.pie(
+                top_holdings,
+                values='Total Value',
+                names='Ticker',
+                title="💰 Top Holdings by Value",
+                color_discrete_sequence=px.colors.qualitative.Pastel
+            )
+            fig.update_traces(textposition='inside', textinfo='percent+label')
+            fig.update_layout(height=400)
+            st.plotly_chart(fig, use_container_width=True)
+    
+    # Concentration Analysis
+    display_concentration_analysis(metrics_df)
+
+def display_concentration_analysis(metrics_df: pd.DataFrame):
+    """Display portfolio concentration analysis."""
+    st.subheader("🎯 Portfolio Concentration")
+    
+    # Calculate concentration metrics
+    total_value = metrics_df['Total Value'].sum()
+    if total_value > 0:
+        top_5_concentration = metrics_df.nlargest(5, 'Total Value')['Total Value'].sum() / total_value * 100
+        top_10_concentration = metrics_df.nlargest(10, 'Total Value')['Total Value'].sum() / total_value * 100
+    else:
+        top_5_concentration = 0
+        top_10_concentration = 0
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric("Top 5 Holdings", f"{top_5_concentration:.1f}%", 
+                 help="Percentage of portfolio in top 5 holdings")
+    
+    with col2:
+        st.metric("Top 10 Holdings", f"{top_10_concentration:.1f}%",
+                 help="Percentage of portfolio in top 10 holdings")
+    
+    with col3:
+        if 'Weight %' in metrics_df.columns:
+            weights = metrics_df['Weight %'].fillna(0) / 100
+            herfindahl_index = (weights ** 2).sum()
+            concentration_level = "High" if herfindahl_index > 0.25 else "Medium" if herfindahl_index > 0.15 else "Low"
+        else:
+            concentration_level = "Unknown"
+        
+        st.metric("Concentration Risk", concentration_level,
+                 help="Based on Herfindahl-Hirschman Index")
+    
+    if st.session_state.education_mode:
+        with st.expander("📚 Understanding Portfolio Concentration"):
+            st.markdown("""
+            **Portfolio Concentration** measures how your investments are distributed:
+            
+            - **Low Concentration:** Well-diversified, lower risk
+            - **High Concentration:** Few large positions, higher risk
+            
+            **Healthy Guidelines:**
+            - Top 5 holdings: < 50% of portfolio
+            - No single holding: > 20% of portfolio
+            - Multiple asset types represented
+            """)
+
+def display_risk_analysis(metrics_df: pd.DataFrame):
+    """Comprehensive risk analysis dashboard."""
+    st.subheader("⚠️ Risk Analysis Dashboard")
+    
+    # Risk Metrics Overview
+    display_risk_metrics_overview(metrics_df)
+    
+    # Risk Distribution Charts
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        display_volatility_distribution(metrics_df)
+    
+    with col2:
+        display_beta_distribution(metrics_df)
+    
+    # Risk Heatmap
+    display_risk_heatmap(metrics_df)
+
+def display_risk_metrics_overview(metrics_df: pd.DataFrame):
+    """Display overview of risk metrics."""
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        avg_beta = metrics_df['Beta'].mean() if 'Beta' in metrics_df.columns else 0
+        risk_level = "High" if avg_beta > 1.2 else "Medium" if avg_beta > 0.8 else "Low"
+        st.metric("Portfolio Beta", f"{avg_beta:.2f}", risk_level)
+    
+    with col2:
+        avg_volatility = metrics_df['Volatility'].mean() if 'Volatility' in metrics_df.columns else 0
+        st.metric("Avg Volatility", f"{avg_volatility:.1f}%")
+    
+    with col3:
+        sharpe_ratio = putils.calculate_portfolio_sharpe(metrics_df)
+        st.metric("Sharpe Ratio", f"{sharpe_ratio:.2f}")
+    
+    with col4:
+        var_95 = putils.calculate_value_at_risk(metrics_df, confidence=0.95)
+        st.metric("VaR (95%)", f"${var_95:,.0f}")
+
+def display_volatility_distribution(metrics_df: pd.DataFrame):
+    """Display volatility distribution histogram."""
+    if 'Volatility' in metrics_df.columns:
+        clean_vol = metrics_df['Volatility'].dropna()
+        if not clean_vol.empty:
+            fig = px.histogram(
+                x=clean_vol,
+                nbins=20,
+                title="📊 Volatility Distribution",
+                labels={'x': 'Volatility (%)', 'y': 'Number of Assets'},
+                color_discrete_sequence=['#3b82f6']
+            )
+            fig.add_vline(x=clean_vol.mean(), line_dash="dash", 
+                         line_color="red", annotation_text="Average")
+            fig.update_layout(height=400, showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
+
+def display_beta_distribution(metrics_df: pd.DataFrame):
+    """Display beta distribution histogram."""
+    if 'Beta' in metrics_df.columns:
+        clean_beta = metrics_df['Beta'].dropna()
+        if not clean_beta.empty:
+            fig = px.histogram(
+                x=clean_beta,
+                nbins=20,
+                title="📊 Beta Distribution",
+                labels={'x': 'Beta (Market Risk)', 'y': 'Number of Assets'},
+                color_discrete_sequence=['#f59e0b']
+            )
+            fig.add_vline(x=1, line_dash="dash", line_color="gray", 
+                         annotation_text="Market Beta")
+            fig.add_vline(x=clean_beta.mean(), line_dash="dash", 
+                         line_color="red", annotation_text="Portfolio Avg")
+            fig.update_layout(height=400, showlegend=False)
+            st.plotly_chart(fig, use_container_width=True)
+
+def display_risk_heatmap(metrics_df: pd.DataFrame):
+    """Display risk metrics heatmap."""
+    st.subheader("🔥 Risk Heatmap")
+    
+    risk_metrics = ['P/L %', 'Beta', 'Volatility', 'RSI']
+    available_metrics = [col for col in risk_metrics if col in metrics_df.columns]
+    
+    if available_metrics:
+        risk_data = metrics_df[['Ticker'] + available_metrics].set_index('Ticker')
+        
+        # Remove rows with all NaN values
+        risk_data = risk_data.dropna(how='all')
+        
+        if not risk_data.empty:
+            fig = px.imshow(
+                risk_data.T,
+                aspect='auto',
+                color_continuous_scale='RdYlGn_r',
+                title="🎯 Risk Metrics Heatmap by Asset",
+                labels={'color': 'Risk Level'}
+            )
+            fig.update_layout(height=300)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            if st.session_state.education_mode:
+                with st.expander("📚 Reading the Risk Heatmap"):
+                    st.markdown("""
+                    **Color Coding:**
+                    - 🟢 **Green:** Lower risk/better performance
+                    - 🟡 **Yellow:** Medium risk
+                    - 🔴 **Red:** Higher risk/worse performance
+                    
+                    **What to look for:**
+                    - Assets with many red cells need attention
+                    - Diversification across green/yellow is healthy
+                    - Extreme values (very red/green) indicate outliers
+                    """)
+
+def display_holdings_detail(metrics_df: pd.DataFrame):
+    """Detailed holdings table with enhanced formatting."""
+    st.subheader("📋 Detailed Holdings")
+    
+    # Display options
+    col1, col2, col3 = st.columns([2, 1, 1])
+    
+    with col1:
+        search_term = st.text_input("🔍 Search assets:", placeholder="Enter ticker or asset type...")
+    
+    with col2:
+        sort_columns = ['Total Value', 'P/L %', 'P/L', 'Ticker', 'Weight %']
+        available_sort_columns = [col for col in sort_columns if col in metrics_df.columns]
+        sort_by = st.selectbox("📊 Sort by:", available_sort_columns)
+    
+    with col3:
+        ascending = st.checkbox("Ascending order", value=False)
+    
+    # Filter and sort data
+    display_df = metrics_df.copy()
+    
+    # Apply search filter
+    if search_term:
+        mask = (
+            display_df['Ticker'].str.contains(search_term, case=False, na=False) |
+            display_df['Asset Type'].str.contains(search_term, case=False, na=False)
+        )
+        display_df = display_df[mask]
+    
+    # Apply sorting
+    if sort_by in display_df.columns:
+        display_df = display_df.sort_values(sort_by, ascending=ascending)
+    
+    # Display the table with native Streamlit styling
+    st.dataframe(
+        display_df,
+        use_container_width=True,
+        height=400
+    )
+    
+    # Export options
+    display_export_options(metrics_df)
+
+def display_export_options(metrics_df: pd.DataFrame):
+    """Display export options for portfolio data."""
+    st.subheader("💾 Export Data")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        csv_data = metrics_df.to_csv(index=False).encode('utf-8')
+        st.download_button(
+            label="📄 Download CSV",
+            data=csv_data,
+            file_name=f"{st.session_state.username}_portfolio_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+            mime='text/csv'
+        )
+    
+    with col2:
+        json_data = metrics_df.to_json(orient="records", indent=2).encode('utf-8')
+        st.download_button(
+            label="📋 Download JSON",
+            data=json_data,
+            file_name=f"{st.session_state.username}_portfolio_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+            mime='application/json'
+        )
+    
+    with col3:
+        if st.button("📊 Generate Report", help="Create detailed portfolio report"):
+            generate_portfolio_report(metrics_df)
+
+def generate_portfolio_report(metrics_df: pd.DataFrame):
+    """Generate a comprehensive portfolio report."""
+    st.info("📊 Generating comprehensive portfolio report...")
+    
+    # Create report summary
+    total_value = metrics_df['Total Value'].sum()
+    total_cost = metrics_df['Cost Basis'].sum()
+    total_pl = total_value - total_cost
+    total_pl_pct = (total_pl / total_cost * 100) if total_cost > 0 else 0
+    
+    # Display report using native Streamlit components
+    st.subheader("📊 Portfolio Report Summary")
+    
+    # Key metrics
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Assets", len(metrics_df))
+    with col2:
+        st.metric("Total Value", f"${total_value:,.2f}")
+    with col3:
+        st.metric("Total P/L", f"${total_pl:,.2f}")
+    with col4:
+        st.metric("Return %", f"{total_pl_pct:.2f}%")
+    
+    # Asset breakdown
+    st.subheader("Asset Type Breakdown")
+    asset_breakdown = metrics_df.groupby('Asset Type')['Total Value'].sum()
+    for asset_type, value in asset_breakdown.items():
+        st.write(f"• **{asset_type}**: ${value:,.2f}")
+    
+    # Top performers
+    st.subheader("Top 5 Performers")
+    top_performers = metrics_df.nlargest(5, 'P/L %')[['Ticker', 'P/L %']]
+    st.dataframe(top_performers, use_container_width=True)
+    
+    # Recommendations
+    recommendations = putils.generate_portfolio_recommendations(metrics_df)
+    if recommendations:
+        st.subheader("Recommendations")
+        for rec in recommendations[:3]:  # Show top 3 recommendations
+            rec_type = rec.get('type', 'info')
+            icon = {"warning": "⚠️", "success": "✅", "info": "💡"}.get(rec_type, "📌")
+            st.write(f"{icon} **{rec['title']}**: {rec['description']}")
+    
+    st.success("✅ Report generated successfully!")
+
+def display_recommendations(metrics_df: pd.DataFrame):
+    """Intelligent portfolio recommendations using native Streamlit."""
+    st.subheader("🎯 Portfolio Recommendations")
+    
+    recommendations = putils.generate_portfolio_recommendations(metrics_df)
+    
+    if recommendations:
+        for i, rec in enumerate(recommendations):
+            rec_type = rec.get('type', 'info')
+            icon = {"warning": "⚠️", "success": "✅", "info": "💡"}.get(rec_type, "📌")
+            
+            # Use native Streamlit alert components instead of HTML
+            if rec_type == "warning":
+                st.warning(f"{icon} **{rec['title']}**\n\n{rec['description']}")
+            elif rec_type == "success":
+                st.success(f"{icon} **{rec['title']}**\n\n{rec['description']}")
+            else:
+                st.info(f"{icon} **{rec['title']}**\n\n{rec['description']}")
+    
+    # Rebalancing suggestions
+    display_rebalancing_suggestions(metrics_df)
+
+def display_rebalancing_suggestions(metrics_df: pd.DataFrame):
+    """Display portfolio rebalancing suggestions."""
+    st.subheader("⚖️ Rebalancing Analysis")
+    
+    rebalancing_data = putils.suggest_rebalancing(metrics_df)
+    
+    if rebalancing_data:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.write("**Current Allocation:**")
+            current_fig = px.pie(
+                rebalancing_data['current'],
+                values='weight',
+                names='asset_type',
+                title="Current Distribution"
+            )
+            current_fig.update_traces(textposition='inside', textinfo='percent+label')
+            st.plotly_chart(current_fig, use_container_width=True)
+        
+        with col2:
+            st.write("**Suggested Allocation:**")
+            suggested_fig = px.pie(
+                rebalancing_data['suggested'],
+                values='weight',
+                names='asset_type',
+                title="Suggested Distribution"
+            )
+            suggested_fig.update_traces(textposition='inside', textinfo='percent+label')
+            st.plotly_chart(suggested_fig, use_container_width=True)
+
+
 def clear_cache():
     """Clear all cached data."""
     st.session_state.price_cache = {}
@@ -1320,484 +1799,6 @@ def show_welcome_message():
                 st.session_state.education_mode = True
                 st.session_state.show_welcome = False
                 st.rerun()
-
-# ============================================================================
-# Analysis Display Functions - FIXED VERSIONS
-# ============================================================================
-
-def display_performance_analysis(metrics_df: pd.DataFrame):
-    """Enhanced performance analysis with multiple chart types."""
-    st.subheader("📊 Performance Analysis")
-    
-    if metrics_df.empty:
-        st.info("No data available for performance analysis.")
-        return
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # P/L Distribution Chart
-        top_performers = metrics_df.nlargest(10, 'P/L')
-        if not top_performers.empty:
-            fig = px.bar(
-                top_performers,
-                x='Ticker',
-                y='P/L',
-                color='P/L',
-                color_continuous_scale=['red', 'yellow', 'green'],
-                title="🏆 Top 10 Performers by Profit/Loss ($)",
-                labels={'P/L': 'Profit/Loss ($)'}
-            )
-            fig.update_layout(
-                height=400,
-                showlegend=False,
-                xaxis_title="Asset",
-                yaxis_title="Profit/Loss ($)"
-            )
-            st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        # Performance percentage chart
-        if not metrics_df['P/L %'].isna().all():
-            top_pct_performers = metrics_df.nlargest(10, 'P/L %')
-            fig = px.bar(
-                top_pct_performers,
-                x='Ticker',
-                y='P/L %',
-                color='P/L %',
-                color_continuous_scale=['red', 'yellow', 'green'],
-                title="📈 Top 10 Performers by Return (%)",
-                labels={'P/L %': 'Return (%)'}
-            )
-            fig.update_layout(
-                height=400,
-                showlegend=False,
-                xaxis_title="Asset",
-                yaxis_title="Return (%)"
-            )
-            st.plotly_chart(fig, use_container_width=True)
-    
-    # Risk vs Return Analysis
-    if 'Alpha' in metrics_df.columns and 'Beta' in metrics_df.columns:
-        display_risk_return_analysis(metrics_df)
-
-def display_risk_return_analysis(metrics_df: pd.DataFrame):
-    """Display risk vs return scatter plot analysis."""
-    st.subheader("🎯 Risk vs Return Analysis")
-    
-    # Filter out NaN values for better visualization
-    clean_df = metrics_df.dropna(subset=['Alpha', 'Beta'])
-    
-    if clean_df.empty:
-        st.info("Insufficient data for risk-return analysis.")
-        return
-    
-    fig = px.scatter(
-        clean_df,
-        x='Beta',
-        y='Alpha',
-        size='Total Value',
-        color='P/L %',
-        hover_name='Ticker',
-        hover_data=['P/L', 'RSI', 'Volatility'],
-        title="📊 Risk-Return Profile (Alpha vs Beta)",
-        labels={'Beta': 'Beta (Market Risk)', 'Alpha': 'Alpha (Excess Return)'},
-        color_continuous_scale='RdYlGn'
-    )
-    
-    # Add quadrant lines
-    fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5)
-    fig.add_vline(x=1, line_dash="dash", line_color="gray", opacity=0.5)
-    
-    fig.update_layout(height=500)
-    st.plotly_chart(fig, use_container_width=True)
-    
-    if st.session_state.education_mode:
-        with st.expander("📚 Understanding Risk-Return Analysis"):
-            st.markdown("""
-            **Alpha (Y-axis):** Measures excess return vs benchmark
-            - **Positive:** Outperforming the market
-            - **Negative:** Underperforming the market
-            
-            **Beta (X-axis):** Measures volatility vs market
-            - **Beta > 1:** More volatile than market
-            - **Beta < 1:** Less volatile than market
-            - **Beta = 1:** Moves with market
-            
-            **Ideal Quadrant:** High Alpha, Low Beta (top-left)
-            """)
-
-def display_allocation_analysis(metrics_df: pd.DataFrame):
-    """Asset allocation visualizations."""
-    st.subheader("🥧 Asset Allocation Analysis")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # Asset Type Distribution
-        allocation_by_type = metrics_df.groupby('Asset Type')['Total Value'].sum().reset_index()
-        
-        if not allocation_by_type.empty:
-            fig = px.pie(
-                allocation_by_type,
-                values='Total Value',
-                names='Asset Type',
-                title="📊 Allocation by Asset Type",
-                color_discrete_sequence=px.colors.qualitative.Set3
-            )
-            fig.update_traces(textposition='inside', textinfo='percent+label')
-            fig.update_layout(height=400)
-            st.plotly_chart(fig, use_container_width=True)
-    
-    with col2:
-        # Top Holdings by Value
-        top_holdings = metrics_df.nlargest(8, 'Total Value')
-        
-        if not top_holdings.empty:
-            fig = px.pie(
-                top_holdings,
-                values='Total Value',
-                names='Ticker',
-                title="💰 Top Holdings by Value",
-                color_discrete_sequence=px.colors.qualitative.Pastel
-            )
-            fig.update_traces(textposition='inside', textinfo='percent+label')
-            fig.update_layout(height=400)
-            st.plotly_chart(fig, use_container_width=True)
-    
-    # Concentration Analysis
-    display_concentration_analysis(metrics_df)
-
-def display_concentration_analysis(metrics_df: pd.DataFrame):
-    """Display portfolio concentration analysis."""
-    st.subheader("🎯 Portfolio Concentration")
-    
-    # Calculate concentration metrics
-    total_value = metrics_df['Total Value'].sum()
-    if total_value > 0:
-        top_5_concentration = metrics_df.nlargest(5, 'Total Value')['Total Value'].sum() / total_value * 100
-        top_10_concentration = metrics_df.nlargest(10, 'Total Value')['Total Value'].sum() / total_value * 100
-    else:
-        top_5_concentration = 0
-        top_10_concentration = 0
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.metric("Top 5 Holdings", f"{top_5_concentration:.1f}%", 
-                 help="Percentage of portfolio in top 5 holdings")
-    
-    with col2:
-        st.metric("Top 10 Holdings", f"{top_10_concentration:.1f}%",
-                 help="Percentage of portfolio in top 10 holdings")
-    
-    with col3:
-        if 'Weight %' in metrics_df.columns:
-            weights = metrics_df['Weight %'].fillna(0) / 100
-            herfindahl_index = (weights ** 2).sum()
-            concentration_level = "High" if herfindahl_index > 0.25 else "Medium" if herfindahl_index > 0.15 else "Low"
-        else:
-            concentration_level = "Unknown"
-        
-        st.metric("Concentration Risk", concentration_level,
-                 help="Based on Herfindahl-Hirschman Index")
-    
-    if st.session_state.education_mode:
-        with st.expander("📚 Understanding Portfolio Concentration"):
-            st.markdown("""
-            **Portfolio Concentration** measures how your investments are distributed:
-            
-            - **Low Concentration:** Well-diversified, lower risk
-            - **High Concentration:** Few large positions, higher risk
-            
-            **Healthy Guidelines:**
-            - Top 5 holdings: < 50% of portfolio
-            - No single holding: > 20% of portfolio
-            - Multiple asset types represented
-            """)
-
-def display_risk_analysis(metrics_df: pd.DataFrame):
-    """Comprehensive risk analysis dashboard."""
-    st.subheader("⚠️ Risk Analysis Dashboard")
-    
-    # Risk Metrics Overview
-    display_risk_metrics_overview(metrics_df)
-    
-    # Risk Distribution Charts
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        display_volatility_distribution(metrics_df)
-    
-    with col2:
-        display_beta_distribution(metrics_df)
-    
-    # Risk Heatmap
-    display_risk_heatmap(metrics_df)
-
-def display_risk_metrics_overview(metrics_df: pd.DataFrame):
-    """Display overview of risk metrics."""
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        avg_beta = metrics_df['Beta'].mean() if 'Beta' in metrics_df.columns else 0
-        risk_level = "High" if avg_beta > 1.2 else "Medium" if avg_beta > 0.8 else "Low"
-        st.metric("Portfolio Beta", f"{avg_beta:.2f}", risk_level)
-    
-    with col2:
-        avg_volatility = metrics_df['Volatility'].mean() if 'Volatility' in metrics_df.columns else 0
-        st.metric("Avg Volatility", f"{avg_volatility:.1f}%")
-    
-    with col3:
-        sharpe_ratio = putils.calculate_portfolio_sharpe(metrics_df)
-        st.metric("Sharpe Ratio", f"{sharpe_ratio:.2f}")
-    
-    with col4:
-        var_95 = putils.calculate_value_at_risk(metrics_df, confidence=0.95)
-        st.metric("VaR (95%)", f"${var_95:,.0f}")
-
-def display_volatility_distribution(metrics_df: pd.DataFrame):
-    """Display volatility distribution histogram."""
-    if 'Volatility' in metrics_df.columns:
-        clean_vol = metrics_df['Volatility'].dropna()
-        if not clean_vol.empty:
-            fig = px.histogram(
-                x=clean_vol,
-                nbins=20,
-                title="📊 Volatility Distribution",
-                labels={'x': 'Volatility (%)', 'y': 'Number of Assets'},
-                color_discrete_sequence=['#3b82f6']
-            )
-            fig.add_vline(x=clean_vol.mean(), line_dash="dash", 
-                         line_color="red", annotation_text="Average")
-            fig.update_layout(height=400, showlegend=False)
-            st.plotly_chart(fig, use_container_width=True)
-
-def display_beta_distribution(metrics_df: pd.DataFrame):
-    """Display beta distribution histogram."""
-    if 'Beta' in metrics_df.columns:
-        clean_beta = metrics_df['Beta'].dropna()
-        if not clean_beta.empty:
-            fig = px.histogram(
-                x=clean_beta,
-                nbins=20,
-                title="📊 Beta Distribution",
-                labels={'x': 'Beta (Market Risk)', 'y': 'Number of Assets'},
-                color_discrete_sequence=['#f59e0b']
-            )
-            fig.add_vline(x=1, line_dash="dash", line_color="gray", 
-                         annotation_text="Market Beta")
-            fig.add_vline(x=clean_beta.mean(), line_dash="dash", 
-                         line_color="red", annotation_text="Portfolio Avg")
-            fig.update_layout(height=400, showlegend=False)
-            st.plotly_chart(fig, use_container_width=True)
-
-def display_risk_heatmap(metrics_df: pd.DataFrame):
-    """Display risk metrics heatmap."""
-    st.subheader("🔥 Risk Heatmap")
-    
-    risk_metrics = ['P/L %', 'Beta', 'Volatility', 'RSI']
-    available_metrics = [col for col in risk_metrics if col in metrics_df.columns]
-    
-    if available_metrics:
-        risk_data = metrics_df[['Ticker'] + available_metrics].set_index('Ticker')
-        
-        # Remove rows with all NaN values
-        risk_data = risk_data.dropna(how='all')
-        
-        if not risk_data.empty:
-            fig = px.imshow(
-                risk_data.T,
-                aspect='auto',
-                color_continuous_scale='RdYlGn_r',
-                title="🎯 Risk Metrics Heatmap by Asset",
-                labels={'color': 'Risk Level'}
-            )
-            fig.update_layout(height=300)
-            st.plotly_chart(fig, use_container_width=True)
-            
-            if st.session_state.education_mode:
-                with st.expander("📚 Reading the Risk Heatmap"):
-                    st.markdown("""
-                    **Color Coding:**
-                    - 🟢 **Green:** Lower risk/better performance
-                    - 🟡 **Yellow:** Medium risk
-                    - 🔴 **Red:** Higher risk/worse performance
-                    
-                    **What to look for:**
-                    - Assets with many red cells need attention
-                    - Diversification across green/yellow is healthy
-                    - Extreme values (very red/green) indicate outliers
-                    """)
-
-def display_holdings_detail(metrics_df: pd.DataFrame):
-    """Detailed holdings table with enhanced formatting."""
-    st.subheader("📋 Detailed Holdings")
-    
-    # Display options
-    col1, col2, col3 = st.columns([2, 1, 1])
-    
-    with col1:
-        search_term = st.text_input("🔍 Search assets:", placeholder="Enter ticker or asset type...")
-    
-    with col2:
-        sort_columns = ['Total Value', 'P/L %', 'P/L', 'Ticker', 'Weight %']
-        available_sort_columns = [col for col in sort_columns if col in metrics_df.columns]
-        sort_by = st.selectbox("📊 Sort by:", available_sort_columns)
-    
-    with col3:
-        ascending = st.checkbox("Ascending order", value=False)
-    
-    # Filter and sort data
-    display_df = metrics_df.copy()
-    
-    # Apply search filter
-    if search_term:
-        mask = (
-            display_df['Ticker'].str.contains(search_term, case=False, na=False) |
-            display_df['Asset Type'].str.contains(search_term, case=False, na=False)
-        )
-        display_df = display_df[mask]
-    
-    # Apply sorting
-    if sort_by in display_df.columns:
-        display_df = display_df.sort_values(sort_by, ascending=ascending)
-    
-    # Display the table with native Streamlit styling
-    st.dataframe(
-        display_df,
-        use_container_width=True,
-        height=400
-    )
-    
-    # Export options
-    display_export_options(metrics_df)
-
-def display_export_options(metrics_df: pd.DataFrame):
-    """Display export options for portfolio data."""
-    st.subheader("💾 Export Data")
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        csv_data = metrics_df.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            label="📄 Download CSV",
-            data=csv_data,
-            file_name=f"{st.session_state.username}_portfolio_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
-            mime='text/csv'
-        )
-    
-    with col2:
-        json_data = metrics_df.to_json(orient="records", indent=2).encode('utf-8')
-        st.download_button(
-            label="📋 Download JSON",
-            data=json_data,
-            file_name=f"{st.session_state.username}_portfolio_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-            mime='application/json'
-        )
-    
-    with col3:
-        if st.button("📊 Generate Report", help="Create detailed portfolio report"):
-            generate_portfolio_report(metrics_df)
-
-def generate_portfolio_report(metrics_df: pd.DataFrame):
-    """Generate a comprehensive portfolio report."""
-    st.info("📊 Generating comprehensive portfolio report...")
-    
-    # Create report summary
-    total_value = metrics_df['Total Value'].sum()
-    total_cost = metrics_df['Cost Basis'].sum()
-    total_pl = total_value - total_cost
-    total_pl_pct = (total_pl / total_cost * 100) if total_cost > 0 else 0
-    
-    # Display report using native Streamlit components
-    st.subheader("📊 Portfolio Report Summary")
-    
-    # Key metrics
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric("Total Assets", len(metrics_df))
-    with col2:
-        st.metric("Total Value", f"${total_value:,.2f}")
-    with col3:
-        st.metric("Total P/L", f"${total_pl:,.2f}")
-    with col4:
-        st.metric("Return %", f"{total_pl_pct:.2f}%")
-    
-    # Asset breakdown
-    st.subheader("Asset Type Breakdown")
-    asset_breakdown = metrics_df.groupby('Asset Type')['Total Value'].sum()
-    for asset_type, value in asset_breakdown.items():
-        st.write(f"• **{asset_type}**: ${value:,.2f}")
-    
-    # Top performers
-    st.subheader("Top 5 Performers")
-    top_performers = metrics_df.nlargest(5, 'P/L %')[['Ticker', 'P/L %']]
-    st.dataframe(top_performers, use_container_width=True)
-    
-    # Recommendations
-    recommendations = putils.generate_portfolio_recommendations(metrics_df)
-    if recommendations:
-        st.subheader("Recommendations")
-        for rec in recommendations[:3]:  # Show top 3 recommendations
-            rec_type = rec.get('type', 'info')
-            icon = {"warning": "⚠️", "success": "✅", "info": "💡"}.get(rec_type, "📌")
-            st.write(f"{icon} **{rec['title']}**: {rec['description']}")
-    
-    st.success("✅ Report generated successfully!")
-
-def display_recommendations(metrics_df: pd.DataFrame):
-    """Intelligent portfolio recommendations using native Streamlit."""
-    st.subheader("🎯 Portfolio Recommendations")
-    
-    recommendations = putils.generate_portfolio_recommendations(metrics_df)
-    
-    if recommendations:
-        for i, rec in enumerate(recommendations):
-            rec_type = rec.get('type', 'info')
-            icon = {"warning": "⚠️", "success": "✅", "info": "💡"}.get(rec_type, "📌")
-            
-            # Use native Streamlit alert components instead of HTML
-            if rec_type == "warning":
-                st.warning(f"{icon} **{rec['title']}**\n\n{rec['description']}")
-            elif rec_type == "success":
-                st.success(f"{icon} **{rec['title']}**\n\n{rec['description']}")
-            else:
-                st.info(f"{icon} **{rec['title']}**\n\n{rec['description']}")
-    
-    # Rebalancing suggestions
-    display_rebalancing_suggestions(metrics_df)
-
-def display_rebalancing_suggestions(metrics_df: pd.DataFrame):
-    """Display portfolio rebalancing suggestions."""
-    st.subheader("⚖️ Rebalancing Analysis")
-    
-    rebalancing_data = putils.suggest_rebalancing(metrics_df)
-    
-    if rebalancing_data:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.write("**Current Allocation:**")
-            current_fig = px.pie(
-                rebalancing_data['current'],
-                values='weight',
-                names='asset_type',
-                title="Current Distribution"
-            )
-            current_fig.update_traces(textposition='inside', textinfo='percent+label')
-            st.plotly_chart(current_fig, use_container_width=True)
-        
-        with col2:
-            st.write("**Suggested Allocation:**")
-            suggested_fig = px.pie(
-                rebalancing_data['suggested'],
-                values='weight',
-                names='asset_type',
-                title="Suggested Distribution"
-            )
-            suggested_fig.update_traces(textposition='inside', textinfo='percent+label')
-            st.plotly_chart(suggested_fig, use_container_width=True)
 
 # ============================================================================
 # Asset Management Pages - FIXED VERSIONS
