@@ -154,6 +154,10 @@ def add_asset_page():
     st.title("Añadir Activo")
     st.write("Aquí podrás añadir un nuevo activo a tu cartera.")
 
+# ============================================================================
+# Portfolio Overview and Dashboard - FIXED VERSION
+# ============================================================================
+
 def display_portfolio_overview():
     """Enhanced portfolio overview with native Streamlit components."""
     show_main_header("📊 Portfolio Dashboard", "Real-time analysis of your investments")
@@ -217,6 +221,172 @@ def display_portfolio_overview():
     # Display components
     display_portfolio_summary(metrics_df)
     display_dashboard_tabs(metrics_df)
+
+def clear_cache():
+    """Clear all cached data."""
+    st.session_state.price_cache = {}
+    st.session_state.price_cache_time = 0
+    st.session_state.benchmark_data = None
+    # Clear portfolio utils cache
+    putils.PRICE_CACHE.clear()
+    putils.CACHE_TIMESTAMPS.clear()
+    putils.HIST_PRICES_CACHE.clear()
+
+def show_portfolio_quick_stats():
+    """Show quick portfolio statistics using native Streamlit."""
+    if st.session_state.portfolio_df is not None:
+        df = st.session_state.portfolio_df
+        last_refresh = st.session_state.last_refresh
+        refresh_text = last_refresh.strftime('%H:%M') if last_refresh else 'Unknown'
+        
+        # Create columns for metrics
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric("🎯 Assets", len(df))
+        
+        with col2:
+            st.metric("📊 Asset Types", df['Asset Type'].nunique())
+        
+        with col3:
+            st.metric("📅 Last Updated", refresh_text)
+        
+        with col4:
+            file_name = st.session_state.selected_portfolio_file or 'Current'
+            st.metric("💾 File", file_name)
+
+def fetch_and_compute_metrics(df: pd.DataFrame) -> Optional[pd.DataFrame]:
+    """Fetch market data and compute enhanced metrics."""
+    try:
+        tickers = df['Ticker'].tolist()
+        
+        # Check if yfinance is available
+        if not putils.YF_AVAILABLE:
+            st.error("❌ Yahoo Finance data is not available. Please check your internet connection.")
+            return None
+        
+        # Get current prices
+        price_dict = putils.get_cached_prices(tickers)
+        
+        # Check for failed price fetches
+        failed_tickers = [t for t, p in price_dict.items() if pd.isna(p)]
+        if failed_tickers:
+            st.warning(f"⚠️ Could not fetch prices for: {', '.join(failed_tickers[:5])}" + 
+                      (f" and {len(failed_tickers)-5} more" if len(failed_tickers) > 5 else ""))
+        
+        # Get benchmark data
+        benchmark_data = putils.fetch_benchmark_data()
+        st.session_state.benchmark_data = benchmark_data
+        
+        # Compute enhanced metrics
+        metrics_df = putils.compute_enhanced_metrics(
+            df, price_dict, benchmark_data, st.session_state.selected_timeframe
+        )
+        
+        return metrics_df
+        
+    except Exception as e:
+        logger.error(f"Error in fetch_and_compute_metrics: {e}")
+        raise
+
+def display_empty_portfolio_guide():
+    """Guide for users with empty portfolios using native Streamlit."""
+    st.markdown("## 🚀 Let's Build Your Portfolio!")
+    st.markdown("Start tracking your investments with our comprehensive tools")
+    
+    # Feature cards using columns
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("### ➕ Add Assets Manually")
+        st.write("Start by adding individual stocks, ETFs, crypto, or other assets one by one")
+    
+    with col2:
+        st.markdown("### 📤 Upload Portfolio")
+        st.write("Import your existing portfolio from CSV or JSON files")
+    
+    with col3:
+        st.markdown("### 📚 Learn as You Go")
+        st.write("Use Education Mode to understand metrics and make better decisions")
+
+def display_portfolio_summary(metrics_df: pd.DataFrame):
+    """Enhanced portfolio summary with native Streamlit metrics."""
+    st.subheader("📈 Portfolio Summary")
+    
+    # Calculate key metrics
+    total_value = metrics_df['Total Value'].sum()
+    total_cost = metrics_df['Cost Basis'].sum()
+    total_pl = total_value - total_cost
+    total_pl_pct = (total_pl / total_cost * 100) if total_cost > 0 else 0
+    
+    # Create metric cards using native st.metric
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric(
+            "💰 Total Value",
+            f"${total_value:,.2f}",
+            help="Current market value of all holdings"
+        )
+    
+    with col2:
+        pl_symbol = "📈" if total_pl >= 0 else "📉"
+        delta_text = f"{total_pl_pct:+.2f}%" if not pd.isna(total_pl_pct) else "N/A"
+        st.metric(
+            f"{pl_symbol} Total P/L",
+            f"${total_pl:,.2f}",
+            delta_text,
+            help="Profit/Loss vs purchase price"
+        )
+    
+    with col3:
+        if not metrics_df['P/L %'].isna().all():
+            best_performer = metrics_df.loc[metrics_df['P/L %'].idxmax(), 'Ticker']
+            best_pl = metrics_df['P/L %'].max()
+        else:
+            best_performer = "N/A"
+            best_pl = 0
+            
+        st.metric(
+            "🏆 Best Performer",
+            str(best_performer),
+            f"+{best_pl:.1f}%" if best_pl > 0 else "N/A",
+            help="Asset with highest return percentage"
+        )
+    
+    with col4:
+        diversification_score = len(metrics_df['Asset Type'].unique())
+        st.metric(
+            "🎯 Diversification",
+            f"{diversification_score} types",
+            f"{len(metrics_df)} assets",
+            help="Number of different asset classes"
+        )
+
+def display_dashboard_tabs(metrics_df: pd.DataFrame):
+    """Display the main dashboard tabs with all analysis."""
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        "📈 Performance Analysis", 
+        "🥧 Asset Allocation", 
+        "📊 Risk Analysis", 
+        "📋 Holdings Detail",
+        "🎯 Recommendations"
+    ])
+    
+    with tab1:
+        display_performance_analysis(metrics_df)
+    
+    with tab2:
+        display_allocation_analysis(metrics_df)
+    
+    with tab3:
+        display_risk_analysis(metrics_df)
+    
+    with tab4:
+        display_holdings_detail(metrics_df)
+    
+    with tab5:
+        display_recommendations(metrics_df)
 
 def show_main_header(title: str, subtitle: str):
     """Display main header with proper Streamlit components."""
@@ -1150,176 +1320,6 @@ def show_welcome_message():
                 st.session_state.education_mode = True
                 st.session_state.show_welcome = False
                 st.rerun()
-
-# ============================================================================
-# Portfolio Overview and Dashboard - FIXED VERSION
-# ============================================================================
-
-def clear_cache():
-    """Clear all cached data."""
-    st.session_state.price_cache = {}
-    st.session_state.price_cache_time = 0
-    st.session_state.benchmark_data = None
-    # Clear portfolio utils cache
-    putils.PRICE_CACHE.clear()
-    putils.CACHE_TIMESTAMPS.clear()
-    putils.HIST_PRICES_CACHE.clear()
-
-def show_portfolio_quick_stats():
-    """Show quick portfolio statistics using native Streamlit."""
-    if st.session_state.portfolio_df is not None:
-        df = st.session_state.portfolio_df
-        last_refresh = st.session_state.last_refresh
-        refresh_text = last_refresh.strftime('%H:%M') if last_refresh else 'Unknown'
-        
-        # Create columns for metrics
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric("🎯 Assets", len(df))
-        
-        with col2:
-            st.metric("📊 Asset Types", df['Asset Type'].nunique())
-        
-        with col3:
-            st.metric("📅 Last Updated", refresh_text)
-        
-        with col4:
-            file_name = st.session_state.selected_portfolio_file or 'Current'
-            st.metric("💾 File", file_name)
-
-def fetch_and_compute_metrics(df: pd.DataFrame) -> Optional[pd.DataFrame]:
-    """Fetch market data and compute enhanced metrics."""
-    try:
-        tickers = df['Ticker'].tolist()
-        
-        # Check if yfinance is available
-        if not putils.YF_AVAILABLE:
-            st.error("❌ Yahoo Finance data is not available. Please check your internet connection.")
-            return None
-        
-        # Get current prices
-        price_dict = putils.get_cached_prices(tickers)
-        
-        # Check for failed price fetches
-        failed_tickers = [t for t, p in price_dict.items() if pd.isna(p)]
-        if failed_tickers:
-            st.warning(f"⚠️ Could not fetch prices for: {', '.join(failed_tickers[:5])}" + 
-                      (f" and {len(failed_tickers)-5} more" if len(failed_tickers) > 5 else ""))
-        
-        # Get benchmark data
-        benchmark_data = putils.fetch_benchmark_data()
-        st.session_state.benchmark_data = benchmark_data
-        
-        # Compute enhanced metrics
-        metrics_df = putils.compute_enhanced_metrics(
-            df, price_dict, benchmark_data, st.session_state.selected_timeframe
-        )
-        
-        return metrics_df
-        
-    except Exception as e:
-        logger.error(f"Error in fetch_and_compute_metrics: {e}")
-        raise
-
-def display_empty_portfolio_guide():
-    """Guide for users with empty portfolios using native Streamlit."""
-    st.markdown("## 🚀 Let's Build Your Portfolio!")
-    st.markdown("Start tracking your investments with our comprehensive tools")
-    
-    # Feature cards using columns
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("### ➕ Add Assets Manually")
-        st.write("Start by adding individual stocks, ETFs, crypto, or other assets one by one")
-    
-    with col2:
-        st.markdown("### 📤 Upload Portfolio")
-        st.write("Import your existing portfolio from CSV or JSON files")
-    
-    with col3:
-        st.markdown("### 📚 Learn as You Go")
-        st.write("Use Education Mode to understand metrics and make better decisions")
-
-def display_portfolio_summary(metrics_df: pd.DataFrame):
-    """Enhanced portfolio summary with native Streamlit metrics."""
-    st.subheader("📈 Portfolio Summary")
-    
-    # Calculate key metrics
-    total_value = metrics_df['Total Value'].sum()
-    total_cost = metrics_df['Cost Basis'].sum()
-    total_pl = total_value - total_cost
-    total_pl_pct = (total_pl / total_cost * 100) if total_cost > 0 else 0
-    
-    # Create metric cards using native st.metric
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric(
-            "💰 Total Value",
-            f"${total_value:,.2f}",
-            help="Current market value of all holdings"
-        )
-    
-    with col2:
-        pl_symbol = "📈" if total_pl >= 0 else "📉"
-        delta_text = f"{total_pl_pct:+.2f}%" if not pd.isna(total_pl_pct) else "N/A"
-        st.metric(
-            f"{pl_symbol} Total P/L",
-            f"${total_pl:,.2f}",
-            delta_text,
-            help="Profit/Loss vs purchase price"
-        )
-    
-    with col3:
-        if not metrics_df['P/L %'].isna().all():
-            best_performer = metrics_df.loc[metrics_df['P/L %'].idxmax(), 'Ticker']
-            best_pl = metrics_df['P/L %'].max()
-        else:
-            best_performer = "N/A"
-            best_pl = 0
-            
-        st.metric(
-            "🏆 Best Performer",
-            str(best_performer),
-            f"+{best_pl:.1f}%" if best_pl > 0 else "N/A",
-            help="Asset with highest return percentage"
-        )
-    
-    with col4:
-        diversification_score = len(metrics_df['Asset Type'].unique())
-        st.metric(
-            "🎯 Diversification",
-            f"{diversification_score} types",
-            f"{len(metrics_df)} assets",
-            help="Number of different asset classes"
-        )
-
-def display_dashboard_tabs(metrics_df: pd.DataFrame):
-    """Display the main dashboard tabs with all analysis."""
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📈 Performance Analysis", 
-        "🥧 Asset Allocation", 
-        "📊 Risk Analysis", 
-        "📋 Holdings Detail",
-        "🎯 Recommendations"
-    ])
-    
-    with tab1:
-        display_performance_analysis(metrics_df)
-    
-    with tab2:
-        display_allocation_analysis(metrics_df)
-    
-    with tab3:
-        display_risk_analysis(metrics_df)
-    
-    with tab4:
-        display_holdings_detail(metrics_df)
-    
-    with tab5:
-        display_recommendations(metrics_df)
 
 # ============================================================================
 # Analysis Display Functions - FIXED VERSIONS
