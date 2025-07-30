@@ -143,6 +143,10 @@ initialize_session_state()
 # ============================================================================
 # UI Helper Functions - FIXED VERSIONS
 # ============================================================================
+def display_portfolio_overview():
+    st.title("Portfolio Overview")
+    st.write("Aquí se mostrará un resumen de la cartera.")
+    # Aquí puedes añadir gráficos, KPIs, o tablas
 
 def show_main_header(title: str, subtitle: str):
     """Display main header with proper Streamlit components."""
