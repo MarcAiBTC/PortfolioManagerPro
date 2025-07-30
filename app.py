@@ -19,10 +19,11 @@ import time
 import traceback
 import logging
 import warnings
+import yfinance as yf
+import json
 from datetime import datetime, timedelta
 from typing import Optional, Dict, List, Tuple
 from typing import Optional, List
-
 import pandas as pd
 import numpy as np
 import streamlit as st
